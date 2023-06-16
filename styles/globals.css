@@ -1,0 +1,256 @@
+body {
+  background: #f0f2da;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.66666;
+  color: #141721;
+  margin: 0;
+}
+.container {
+  max-width: 1440px;
+  width: 100%;
+  padding: 32px 44px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.header {
+  background: #141721;
+  padding: 0px 32px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+.header-r {
+  display: inline-flex;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-gap: 32px;
+}
+.box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #ffffff;
+  overflow: hidden;
+}
+.box-content {
+  padding: 16px 24px 24px;
+}
+.box img {
+  height: 100%;
+  object-fit: contain;
+}
+.box.collection {
+  position: relative;
+  padding: 30px;
+}
+.collection {
+  padding: 16px;
+  gap: 16px;
+}
+.drop {
+  max-width: 500px;
+  margin: 0 auto;
+}
+.amount {
+  margin-bottom: 8px;
+}
+.br {
+  border-radius: 12px;
+}
+.text-center {
+  text-align: center;
+}
+.actions {
+  display: flex;
+  gap: 32px;
+  max-width: 500px;
+  margin: 0 auto 32px;
+}
+h1 {
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 28px;
+  color: #f0f2da;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+h3 {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 24px;
+  margin-top: 0px;
+  margin-bottom: 4px;
+}
+p {
+  margin-top: 0px;
+  margin-bottom: 20px;
+}
+label {
+  font-weight: bold;
+}
+input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+a {
+}
+img {
+  max-width: 100%;
+}
+button {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  padding: 9px 20px;
+  background: #78dce8;
+  border-radius: 6px;
+  animation-name: bounceOut;
+  animation-duration: 50s;
+  box-shadow: none;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+button:hover {
+  animation-name: bounceIn;
+  animation-duration: 50s;
+}
+button svg {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+button span {
+  padding-left: 12px;
+}
+.btn-connect-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.btn-connect-wrapper button {
+  width: fit-content;
+  min-width: 134px;
+}
+.btn-connect-wrapper .error {
+  color: red;
+  font-size: 12px;
+}
+.btn-mint {
+  display: inline-block;
+  width: fit-content;
+  min-width: 120px;
+}
+.builders {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 24px;
+  color: #f9ff73;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.3s;
+}
+.builders:hover {
+  color: #141721;
+  background-color: #f9ff73;
+}
+
+@media (min-width: 767px) {
+  .container {
+    padding: 32px 88px;
+  }
+  .header-l {
+    max-width: 404px;
+    margin-right: 20px;
+  }
+}
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .box.collection {
+    padding-top: 60px;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: translateY(0);
+  }
+  1% {
+    transform: translateY(-4px);
+  }
+  2%,
+  to {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes bounceOut {
+  0% {
+    transform: translateY(-3px);
+  }
+  1% {
+    transform: translateY(1px);
+  }
+  2%,
+  to {
+    transform: translateY(0);
+  }
+}
+
+/** Spinner */
+.spinner {
+  animation: rotate 2s linear infinite;
+  z-index: 2;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: none;
+}
+.path {
+  stroke-dasharray: 8, 10;
+  animation: dash 8s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dashoffset: -124;
+  }
+}
+
+.Toastify__close-button {
+  width: 40px;
+}
+.Toastify__close-button svg {
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
