@@ -9,10 +9,10 @@ import {
   switchChain,
   metamaskNotSupportedMessage,
 } from "../lib/utils";
-import NftGallery from "../components/nftGallery";
-import CollectionInfo from "../components/collectionInfo";
-import Spinner from "../components/spinner";
-import IconWallet from "../components/iconWallet";
+import NftGallery from "./nftGallery";
+import CollectionInfo from "./collectionInfo";
+import Spinner from "./spinner";
+import IconWallet from "./iconWallet";
 
 export default function Home({}) {
   const CHAIN_ID = process.env.NEXT_PUBLIC_CHAIN_ID;
@@ -201,7 +201,7 @@ export default function Home({}) {
     }
   }
 
-  return (
+  return ( 
     <div>
       <div className="box collection br text-center">
         {/* Collection loaded */}

@@ -22,10 +22,10 @@ lib-cov
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
+dist/
 
 # Dependency directories
 node_modules/
-
 
 # TypeScript v1 declaration files
 typings/
@@ -64,9 +64,9 @@ typings/
 # Next.js build output
 .next
 
-
 # Lock files
 package-lock.json
 yarn.lock
 
-templates/evm/core/pages/api
+.idea/
+.vscode/
