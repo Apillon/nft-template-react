@@ -1,9 +1,9 @@
-import '../styles/globals.css'
+import './styles/globals.css'
 import 'react-toastify/dist/ReactToastify.css'
 import React from 'react'
 import { ToastContainer } from 'react-toastify'
-import Header from 'components/Header'
-import Main from 'components/Main'
+import Header from './components/Header'
+import Main from './components/Main'
 
 const App = () => {
   return (

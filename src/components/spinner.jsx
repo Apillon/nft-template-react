@@ -1,12 +1,14 @@
-export default function Spinner({}) {
+import React from 'react'
+
+export default function Spinner () {
   return (
     <span>
       <svg
         className="spinner"
         style={{
-          margin: "-12px 0 0 -12px",
-          width: "24px",
-          height: "24px",
+          margin: '-12px 0 0 -12px',
+          width: '24px',
+          height: '24px'
         }}
         viewBox="0 0 50 50"
       >
@@ -21,5 +23,5 @@ export default function Spinner({}) {
         ></circle>
       </svg>
     </span>
-  );
+  )
 }

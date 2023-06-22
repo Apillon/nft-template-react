@@ -1,4 +1,6 @@
-export default function IconWallet() {
+import React from 'react'
+
+export default function IconWallet () {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -12,5 +14,5 @@ export default function IconWallet() {
         fill="currentColor"
       />
     </svg>
-  );
+  )
 }

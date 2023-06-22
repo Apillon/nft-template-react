@@ -1,4 +1,6 @@
-export default function Header() {
+import React from 'react'
+
+export default function Header () {
   return (
     <div className="header br">
       <div className="header-l">
@@ -6,7 +8,7 @@ export default function Header() {
           A matter of minutes. And zero developing costs. Want to build your own
           NFT collection?
         </h1>
-        <a href="https://apillon.io/" className="builders" target="_blank">
+        <a href="https://apillon.io/" className="builders" target="_blank" rel="noreferrer">
           Build with Apillon
         </a>
       </div>
@@ -14,5 +16,5 @@ export default function Header() {
         <img src="images/header.svg" />
       </div>
     </div>
-  );
+  )
 }

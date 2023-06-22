@@ -1,134 +1,128 @@
-import { useState } from "react";
-import { ethers } from "ethers";
-import { toast } from "react-toastify";
-import { nftAbi } from "../lib/abi";
+import React, { useState } from 'react'
+import { ethers } from 'ethers'
+import { toast } from 'react-toastify'
+import { nftAbi } from '../lib/abi'
 
-import {
-  addChain,
-  getCurrentChain,
-  switchChain,
-  metamaskNotSupportedMessage,
-} from "../lib/utils";
-import NftGallery from "./nftGallery";
-import CollectionInfo from "./collectionInfo";
-import Spinner from "./spinner";
-import IconWallet from "./iconWallet";
+import { addChain, getCurrentChain, switchChain, metamaskNotSupportedMessage } from '../lib/utils'
+import NftGallery from './NftGallery'
+import CollectionInfo from './CollectionInfo'
+import Spinner from './Spinner'
+import IconWallet from './IconWallet'
 
-export default function Home({}) {
-  const CHAIN_ID = process.env.NEXT_PUBLIC_CHAIN_ID;
-  const NFT_ADDRESS = process.env.NEXT_PUBLIC_NFT_ADDRESS;
+export default function Main () {
+  const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
+  const NFT_ADDRESS = process.env.REACT_APP_NFT_ADDRESS
 
-  const [provider, setProvider] = useState(null);
-  const [contract, setContract] = useState(null);
-  const [address, setAddress] = useState();
+  const [provider, setProvider] = useState(null)
+  const [contract, setContract] = useState(null)
+  const [address, setAddress] = useState()
 
-  const [loading, setLoading] = useState(false);
-  const [loadingNfts, setLoadingNfts] = useState(false);
-  const [loadingMyNfts, setLoadingMyNfts] = useState(false);
+  const [loading, setLoading] = useState(false)
+  const [loadingNfts, setLoadingNfts] = useState(false)
+  const [loadingMyNfts, setLoadingMyNfts] = useState(false)
 
-  const [currentChain, setCurrentChain] = useState();
-  const [collectionInfo, setCollectionInfo] = useState(null);
-  const [nfts, setNfts] = useState([]);
-  const [filterByAddress, setFilterByAddress] = useState(false);
+  const [currentChain, setCurrentChain] = useState()
+  const [collectionInfo, setCollectionInfo] = useState(null)
+  const [nfts] = useState([])
+  const [filterByAddress, setFilterByAddress] = useState(false)
 
   const setupProvider = () => {
-    const { ethereum } = window;
-    if (provider) return provider;
+    const { ethereum } = window
+    if (provider) return provider
 
-    const newProvider = new ethers.providers.Web3Provider(ethereum);
-    setProvider(newProvider);
+    const newProvider = new ethers.providers.Web3Provider(ethereum)
+    setProvider(newProvider)
 
-    return newProvider;
-  };
+    return newProvider
+  }
   const setupContract = () => {
-    const { ethereum } = window;
-    if (contract) return contract;
+    if (contract) return contract
 
-    const provider = setupProvider();
-    const newContract = new ethers.Contract(NFT_ADDRESS, nftAbi, provider);
-    setContract(newContract);
+    const provider = setupProvider()
+    const newContract = new ethers.Contract(NFT_ADDRESS, nftAbi, provider)
+    setContract(newContract)
 
-    return newContract;
-  };
+    return newContract
+  }
   const setupCurrentChain = async () => {
-    if (currentChain) return currentChain;
+    if (currentChain) return currentChain
 
-    const newCurrentChain = await getCurrentChain();
-    setCurrentChain(newCurrentChain);
+    const newCurrentChain = await getCurrentChain()
+    setCurrentChain(newCurrentChain)
 
-    return newCurrentChain;
-  };
+    return newCurrentChain
+  }
   const setupAddress = async () => {
-    if (address) return address;
+    if (address) return address
 
-    const provider = setupProvider();
-    const newAddress = await provider.getSigner().getAddress();
-    setAddress(newAddress);
+    const provider = setupProvider()
+    const newAddress = await provider.getSigner().getAddress()
+    setAddress(newAddress)
 
-    return newAddress;
-  };
+    return newAddress
+  }
   const setupCollectionInfo = async () => {
-    if (collectionInfo) return collectionInfo;
+    if (collectionInfo) return collectionInfo
 
-    const newInfo = await getCollectionInfo();
-    setCollectionInfo(newInfo);
+    const newInfo = await getCollectionInfo()
+    setCollectionInfo(newInfo)
 
-    return newInfo;
-  };
+    return newInfo
+  }
 
-  async function connectWallet() {
-    const { ethereum } = window;
+  async function connectWallet () {
+    const { ethereum } = window
     if (!ethereum) {
-      toast(metamaskNotSupportedMessage(), { type: "error" });
-      return;
+      toast(metamaskNotSupportedMessage(), { type: 'error' })
+      return
     }
-    setLoading(true);
+    setLoading(true)
 
-    let provider = setupProvider();
-    let contract = setupContract();
-    let currentChain = await setupCurrentChain();
+    setupProvider()
+    setupContract()
+    let currentChain = await setupCurrentChain()
 
-    if (currentChain != CHAIN_ID) {
+    if (currentChain !== CHAIN_ID) {
       try {
-        await switchChain(CHAIN_ID);
+        await switchChain(CHAIN_ID)
 
-        provider = setupProvider();
-        contract = setupContract();
-        currentChain = await setupCurrentChain();
+        setupProvider()
+        setupContract()
+        currentChain = await setupCurrentChain()
       } catch (e) {
-        toast("Error connecting to metamask", { type: "error" });
+        toast('Error connecting to metamask', { type: 'error' })
 
         try {
-          await addChain(CHAIN_ID);
+          await addChain(CHAIN_ID)
         } catch (e) {
-          toast("" + e, { type: "error" });
+          toast('' + e, { type: 'error' })
         }
       }
     }
 
     await ethereum.request({
-      method: "eth_requestAccounts",
-    });
+      method: 'eth_requestAccounts'
+    })
 
-    setupAddress();
+    setupAddress()
 
     try {
-      await setupCollectionInfo();
+      await setupCollectionInfo()
     } catch (e) {
-      console.error(e);
-      toast("Invalid NFT collection", { type: "error" });
-      setLoading(false);
-      return;
+      console.error(e)
+      toast('Invalid NFT collection', { type: 'error' })
+      setLoading(false)
+      return
     }
 
-    await loadAllNFTs();
+    await loadAllNFTs()
     setTimeout(() => {
-      setLoading(false);
-    }, 300);
+      setLoading(false)
+    }, 300)
   }
 
-  async function getCollectionInfo() {
-    const contract = setupContract();
+  async function getCollectionInfo () {
+    const contract = setupContract()
     return {
       name: await contract.name(),
       symbol: await contract.symbol(),
@@ -141,89 +135,89 @@ export default function Home({}) {
       reserve: await contract.reserve(),
       price: await contract.price(),
       royaltiesFees: await contract.royaltiesFees(),
-      royaltiesAddress: await contract.royaltiesAddress(),
-    };
+      royaltiesAddress: await contract.royaltiesAddress()
+    }
   }
 
-  async function loadAllNFTs() {
-    setLoadingNfts(true);
-    setFilterByAddress(false);
+  async function loadAllNFTs () {
+    setLoadingNfts(true)
+    setFilterByAddress(false)
 
-    const collectionInfo = await setupCollectionInfo();
+    const collectionInfo = await setupCollectionInfo()
     if (collectionInfo) {
-      await fetchNFTs(collectionInfo.totalSupply);
+      await fetchNFTs(collectionInfo.totalSupply)
     }
-    setLoadingNfts(false);
+    setLoadingNfts(false)
   }
 
-  async function loadMyNFTs() {
-    setLoadingMyNfts(true);
-    setFilterByAddress(true);
+  async function loadMyNFTs () {
+    setLoadingMyNfts(true)
+    setFilterByAddress(true)
 
-    const address = setupAddress();
-    const contract = setupContract();
-    const balance = await contract.balanceOf(address);
+    const address = setupAddress()
+    const contract = setupContract()
+    const balance = await contract.balanceOf(address)
 
-    await fetchNFTs(balance, address);
-    setLoadingMyNfts(false);
+    await fetchNFTs(balance, address)
+    setLoadingMyNfts(false)
   }
 
-  async function fetchNFTs(balance, address = null) {
-    clearNfts();
+  async function fetchNFTs (balance, address = null) {
+    clearNfts()
     if (balance.toBigInt() === 0) {
-      return;
+      return
     }
-    const contract = setupContract();
+    const contract = setupContract()
 
     for (let i = 0; i < balance.toBigInt(); i++) {
       try {
         const id = address
           ? await contract.tokenOfOwnerByIndex(address, i)
-          : await contract.tokenByIndex(i);
-        const url = await contract.tokenURI(id.toBigInt());
+          : await contract.tokenByIndex(i)
+        const url = await contract.tokenURI(id.toBigInt())
         const metadata = await fetch(url).then((response) => {
-          return response.json();
-        });
-        nfts.push({ id: i, ...metadata });
+          return response.json()
+        })
+        nfts.push({ id: i, ...metadata })
       } catch (e) {
-        console.error(e);
+        console.error(e)
 
-        toast("Apologies, we were unable to load NFT: " + (i + 1), {
-          type: "error",
-        });
+        toast('Apologies, we were unable to load NFT: ' + (i + 1), {
+          type: 'error'
+        })
       }
     }
   }
 
-  function clearNfts() {
+  function clearNfts () {
     while (nfts && nfts.length > 0) {
-      nfts.pop();
+      nfts.pop()
     }
   }
 
-  return ( 
+  return (
     <div>
       <div className="box collection br text-center">
         {/* Collection loaded */}
         {collectionInfo && (
-          <CollectionInfo
-            collection={collectionInfo}
-            provider={provider}
-            address={address}
-          />
+          <CollectionInfo collection={collectionInfo} provider={provider} address={address} />
         )}
 
         <div className="btn-connect-wrapper">
           <button id="btnConnect" onClick={() => connectWallet()}>
-            {loading ? (
+            {loading
+              ? (
               <Spinner />
-            ) : address ? (
+                )
+              : address
+                ? (
               <span>
                 <IconWallet /> {address.slice(0, 11)}
               </span>
-            ) : (
-              "Connect wallet"
-            )}
+                  )
+                : (
+                    'Connect wallet'
+                  )}
           </button>
         </div>
       </div>
@@ -234,10 +228,10 @@ export default function Home({}) {
           <h2 className="text-center">Show NFTs:</h2>
           <div className="actions">
             <button id="btnAllNFTs" onClick={() => loadAllNFTs()}>
-              {loadingNfts ? <Spinner /> : "All nfts"}
+              {loadingNfts ? <Spinner /> : 'All nfts'}
             </button>
             <button id="myNFTs" onClick={() => loadMyNFTs()}>
-              {loadingMyNfts ? <Spinner /> : "My nfts"}
+              {loadingMyNfts ? <Spinner /> : 'My nfts'}
             </button>
           </div>
         </div>
@@ -248,21 +242,17 @@ export default function Home({}) {
         <div>
           {(() => {
             if (collectionInfo.totalSupply === 0) {
-              return (
-                <h2 class="text-center">No NFTs, they must be minted first.</h2>
-              );
+              return <h2 className="text-center">No NFTs, they must be minted first.</h2>
             } else if (filterByAddress && !nfts) {
-              return <h2 class="text-center">You don`t have any NFTs</h2>;
+              return <h2 className="text-center">You don`t have any NFTs</h2>
             } else if (!nfts) {
-              return (
-                <h2 class="text-center">No NFTs, they must be minted first.</h2>
-              );
+              return <h2 className="text-center">No NFTs, they must be minted first.</h2>
             } else {
-              return <NftGallery address={address} nfts={nfts} />;
+              return <NftGallery address={address} nfts={nfts} />
             }
           })()}
         </div>
       )}
     </div>
-  );
+  )
 }
