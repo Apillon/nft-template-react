@@ -69,7 +69,6 @@ package-lock.json
 yarn.lock
 
 # dotenv environment variables file
-.env
 .env.test
 
 # misc

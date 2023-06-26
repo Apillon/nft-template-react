@@ -12,7 +12,7 @@ Once downloaded, the zip file includes all files you need to display your NFT co
 ### Advanced
 
 1. Fork the repo
-2. Configure .env.local
+2. Configure .env
 3. Make changes to the website (optional)
 4. Deploy files to Apillon hosting
 
@@ -22,11 +22,9 @@ Before the template can interact with the Smart Contract you have deployed via U
 
 To configure the template, do the following:
 
-1. Open the template folder "js"
-2. Locate env.js file within the js folder
-3. Open the env.js file in code editor
-4. Change the first line by entering your smart contract address between parenthesis
-5. Select the chain version by commenting and uncommenting the right chain
+1. Open the .env file in code editor
+2. Change the first line by entering your smart contract address between parenthesis
+3. Select the chain version by commenting and uncommenting the right chain
 
 Example:
 
@@ -39,7 +37,7 @@ const nftAddress = ""; // Paste the address of the NFT collection between the pa
 // const chainId = "0x250"; // Astar
 ```
 
-Once you have updated the js/env.js file, save it. Now the website files are ready to be deployed.
+Once you have updated the .env. file, save it. Now the website files are ready to be deployed.
 ​
 
 ## Preview the website on your computer
