@@ -110,7 +110,7 @@ export default function Main () {
       await setupCollectionInfo()
     } catch (e) {
       console.error(e)
-      toast('Invalid NFT collection', { type: 'error' })
+      toast('Provided NFT collection address is invalid! Please check NFT address and Chain ID.', { type: 'error' })
       setLoading(false)
       return
     }
