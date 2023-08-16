@@ -2,13 +2,13 @@ import styles from '../styles/NftGallery.module.css'
 import NftCard from './NftCard'
 import React from 'react'
 
-export default function NftGallery ({ nfts, address }) {
+export default function NftGallery ({ nfts, address, isCollectionNestable, myNFTs }) {
   return (
     <div className={styles.nft_grid}>
       {nfts?.length
         ? (
             nfts.map((nft) => {
-              return <NftCard key={nft.id} id={nft.id} nft={nft} />
+              return <NftCard key={nft.id} id={nft.id} nft={nft} isCollectionNestable={isCollectionNestable} myNFTs={myNFTs} />
             })
           )
         : address

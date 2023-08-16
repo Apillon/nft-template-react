@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { ethers } from 'ethers'
+import { BigNumber } from 'ethers'
 import { toast } from 'react-toastify'
-import { nftAbi } from '../lib/abi'
 
-import { addChain, getCurrentChain, switchChain, metamaskNotSupportedMessage } from '../lib/utils'
+import { addChain, getCurrentChain, switchChain, metamaskNotSupportedMessage, getProvider, getContract, isTokenNestable, getMyNftIDs } from '../lib/utils'
+import Btn from './Btn'
 import NftGallery from './NftGallery'
 import CollectionInfo from './CollectionInfo'
 import Spinner from './Spinner'
@@ -11,7 +11,6 @@ import IconWallet from './IconWallet'
 
 export default function Main () {
   const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
-  const NFT_ADDRESS = process.env.REACT_APP_NFT_ADDRESS
 
   const [provider, setProvider] = useState(null)
   const [contract, setContract] = useState(null)
@@ -23,14 +22,16 @@ export default function Main () {
 
   const [currentChain, setCurrentChain] = useState()
   const [collectionInfo, setCollectionInfo] = useState(null)
+  const [collectionNestable, setCollectionNestable] = useState(null)
+  const [myNFTs, setMyNFTs] = useState([])
+
   const [nfts] = useState([])
   const [filterByAddress, setFilterByAddress] = useState(false)
 
   const setupProvider = () => {
-    const { ethereum } = window
     if (provider) return provider
 
-    const newProvider = new ethers.providers.Web3Provider(ethereum)
+    const newProvider = getProvider()
     setProvider(newProvider)
 
     return newProvider
@@ -38,8 +39,7 @@ export default function Main () {
   const setupContract = () => {
     if (contract) return contract
 
-    const provider = setupProvider()
-    const newContract = new ethers.Contract(NFT_ADDRESS, nftAbi, provider)
+    const newContract = getContract()
     setContract(newContract)
 
     return newContract
@@ -69,6 +69,22 @@ export default function Main () {
 
     return newInfo
   }
+  const setupCollectionType = async () => {
+    if (collectionNestable !== null) return collectionNestable
+
+    const collectionType = await isTokenNestable(setupContract())
+    setCollectionNestable(collectionType)
+
+    return collectionType
+  }
+  const setupMyNFTs = async () => {
+    if (Array.isArray(myNFTs) && myNFTs.length > 0) return myNFTs
+
+    const nfts = await getMyNftIDs(setupContract(), setupAddress())
+    setMyNFTs(nfts)
+
+    return nfts
+  }
 
   async function connectWallet () {
     const { ethereum } = window
@@ -80,7 +96,13 @@ export default function Main () {
 
     setupProvider()
     setupContract()
-    let currentChain = await setupCurrentChain()
+
+    let currentChain = null
+    try {
+      currentChain = await setupCurrentChain()
+    } catch (error) {
+      console.log(error)
+    }
 
     if (currentChain !== CHAIN_ID) {
       try {
@@ -100,6 +122,9 @@ export default function Main () {
       }
     }
 
+    /** Check if collection is Nestable */
+    setupCollectionType()
+
     await ethereum.request({
       method: 'eth_requestAccounts'
     })
@@ -110,10 +135,14 @@ export default function Main () {
       await setupCollectionInfo()
     } catch (e) {
       console.error(e)
-      toast('Provided NFT collection address is invalid! Please check NFT address and Chain ID.', { type: 'error' })
+      toast('Provided NFT collection address is invalid! Please check NFT address and Chain ID.', {
+        type: 'error'
+      })
       setLoading(false)
       return
     }
+
+    setupMyNFTs()
 
     await loadAllNFTs()
     setTimeout(() => {
@@ -133,9 +162,12 @@ export default function Main () {
       drop: await contract.isDrop(),
       dropStart: await contract.dropStart(),
       reserve: await contract.reserve(),
-      price: await contract.price(),
-      royaltiesFees: await contract.royaltiesFees(),
-      royaltiesAddress: await contract.royaltiesAddress()
+      price: BigNumber.from('4'),
+      royaltiesFees: BigNumber.from('42'),
+      royaltiesAddress: ''
+      // price: await contract.price(),
+      // royaltiesFees: await contract.royaltiesFees(),
+      // royaltiesAddress: await contract.royaltiesAddress()
     }
   }
 
@@ -200,25 +232,26 @@ export default function Main () {
       <div className="box collection br text-center">
         {/* Collection loaded */}
         {collectionInfo && (
-          <CollectionInfo collection={collectionInfo} provider={provider} address={address} />
+          <CollectionInfo
+            collection={collectionInfo}
+            provider={provider}
+            address={address}
+            isCollectionNestable={collectionNestable}
+          />
         )}
 
         <div className="btn-connect-wrapper">
-          <button id="btnConnect" onClick={() => connectWallet()}>
-            {loading
+          <Btn loading={loading} id="btnConnect" onClick={() => connectWallet()}>
+            {address
               ? (
-              <Spinner />
-                )
-              : address
-                ? (
-              <span>
+              <span className='address'>
                 <IconWallet /> {address.slice(0, 11)}
               </span>
-                  )
-                : (
-                    'Connect wallet'
-                  )}
-          </button>
+                )
+              : (
+                  'Connect wallet'
+                )}
+          </Btn>
         </div>
       </div>
 
@@ -248,7 +281,7 @@ export default function Main () {
             } else if (!nfts) {
               return <h2 className="text-center">No NFTs, they must be minted first.</h2>
             } else {
-              return <NftGallery address={address} nfts={nfts} />
+              return <NftGallery address={address} nfts={nfts} isCollectionNestable={collectionNestable} myNFTs={myNFTs} />
             }
           })()}
         </div>

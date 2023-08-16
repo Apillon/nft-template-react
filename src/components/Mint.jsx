@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import React, { useRef, useState } from 'react'
 import { toast } from 'react-toastify'
-import { nftAbi } from '../lib/abi'
+import nftAbi from '../lib/nftAbi'
 import Spinner from './Spinner'
 
 export default function Mint ({ price, provider, address }) {

@@ -1,3 +1,7 @@
+import { ethers } from 'ethers'
+import nftAbi from './nftAbi'
+import { toast } from 'react-toastify'
+
 function browserName () {
   const userAgent = navigator.userAgent
   let browserName = ''
@@ -102,4 +106,53 @@ export const switchChain = async (chainId) => {
     method: 'wallet_switchEthereumChain',
     params: [{ chainId }] // chainId must be in HEX with 0x in front
   })
+}
+
+export function checkInputAddress (address) {
+  if (!address) {
+    toast.error('Enter contract address!')
+    return false
+  }
+  return true
+}
+export function checkInputToken (token) {
+  if (token && Number(token) >= 0) {
+    return true
+  }
+  toast.error('Enter token ID!')
+  return false
+}
+
+export const getProvider = () => {
+  const { ethereum } = window
+  return new ethers.providers.Web3Provider(ethereum)
+}
+
+export const getContract = (contractAddress) => {
+  const NFT_ADDRESS = process.env.REACT_APP_NFT_ADDRESS
+  return new ethers.Contract(contractAddress || NFT_ADDRESS, nftAbi, getProvider())
+}
+
+export async function isTokenNestable (contract) {
+  try {
+    return await contract.supportsInterface('0x42b0e56f')
+  } catch (e) {
+    console.error(e)
+    return false
+  }
+}
+
+export async function getMyNftIDs (contract, walletAddress) {
+  const nftIDs = []
+  try {
+    const balance = await contract.balanceOf(walletAddress)
+
+    for (let i = 0; i < balance.toBigInt(); i++) {
+      const tokenId = await contract.tokenOfOwnerByIndex(walletAddress, i)
+      nftIDs.push(tokenId.toNumber())
+    }
+  } catch (error) {
+    console.log(error)
+  }
+  return nftIDs
 }

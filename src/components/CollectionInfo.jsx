@@ -1,12 +1,11 @@
 import { ethers } from 'ethers'
 import React, { useEffect, useState } from 'react'
 import Mint from './Mint'
+import MintNestable from './MintNestable'
 
-export default function collection ({ collection, provider, address }) {
-  const [totalSupply] = useState(
-    collection.totalSupply.toNumber()
-  )
-  const [maxSupply] = useState(collection.maxSupply.toNumber())
+export default function collection ({ collection, provider, address, isCollectionNestable }) {
+  const [totalSupply] = useState(collection.totalSupply)
+  const [maxSupply] = useState(collection.maxSupply)
   const [dropStartDate, setDropStartDate] = useState(new Date())
   const [dropStartTimestamp, setDropStartTimestamp] = useState(0)
   const [days, setDays] = useState(0)
@@ -38,13 +37,13 @@ export default function collection ({ collection, provider, address }) {
         // The data/time we want to countdown to
         countdown(dropStartTimestamp)
 
-        // Run myfunc every second
-        const myfunc = setInterval(() => {
+        // Run myFunc every second
+        const myFunc = setInterval(() => {
           countdown(dropStartTimestamp)
           // Display the message when countdown is over
-          const timeleft = dropStartTimestamp - new Date().getTime()
-          if (timeleft < 0) {
-            clearInterval(myfunc)
+          const timeLeft = dropStartTimestamp - new Date().getTime()
+          if (timeLeft < 0) {
+            clearInterval(myFunc)
           }
         }, 1000)
       }
@@ -53,13 +52,13 @@ export default function collection ({ collection, provider, address }) {
 
   const countdown = (date) => {
     const now = new Date().getTime()
-    const timeleft = date - now
+    const timeLeft = date - now
 
     // Calculating the days, hours, minutes and seconds left
-    setDays(Math.floor(timeleft / (1000 * 60 * 60 * 24)))
-    setHours(Math.floor((timeleft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)))
-    setMinutes(Math.floor((timeleft % (1000 * 60 * 60)) / (1000 * 60)))
-    setSeconds(Math.floor((timeleft % (1000 * 60)) / 1000))
+    setDays(Math.floor(timeLeft / (1000 * 60 * 60 * 24)))
+    setHours(Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)))
+    setMinutes(Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)))
+    setSeconds(Math.floor((timeLeft % (1000 * 60)) / 1000))
   }
 
   return (
@@ -78,7 +77,7 @@ export default function collection ({ collection, provider, address }) {
       </div>
       <div>
         <b> Supply: </b>
-        {totalSupply}/{maxSupply}
+        {totalSupply.toString()}/{maxSupply.toString()}
       </div>
       {/* Is drop */}
       {collection.drop && (
@@ -88,29 +87,25 @@ export default function collection ({ collection, provider, address }) {
             {ethers.utils.formatEther(collection.price)}
           </div>
           {(() => {
-            if (totalSupply === maxSupply) {
+            if (totalSupply && maxSupply && totalSupply.toString() === maxSupply.toString()) {
               return <h3>Sold out!</h3>
             } else if (dropStartTimestamp > Date.now()) {
               return (
                 <div className="drop" id="drop">
                   <div>
                     <b> Drop: </b>
-                    {dropStartDate.toDateString()}{' '}
-                    {dropStartDate.toLocaleTimeString()} {days} <b>d </b>
+                    {dropStartDate.toDateString()} {dropStartDate.toLocaleTimeString()} {days}{' '}
+                    <b>d </b>
                     {hours} <b>h </b>
                     {minutes} <b>m </b>
                     {seconds} <b>s </b>
                   </div>
                 </div>
               )
+            } else if (isCollectionNestable) {
+              return (<div className="drop"><MintNestable price={collection.price} provider={provider} address={address} /></div>)
             } else {
-              return (
-                <Mint
-                  price={collection.price}
-                  provider={provider}
-                  address={address}
-                />
-              )
+              return (<div className="drop"><Mint price={collection.price} provider={provider} address={address} /></div>)
             }
           })()}
         </div>
