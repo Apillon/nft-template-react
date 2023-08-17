@@ -12,7 +12,11 @@
   - Template upload to Hosting
   - Custom domain setup
 
-
+## Using the git repo
+Git repo includes the following files: 
+- NFT images used in the workshop are in the folder **NFT-images**
+- CSV file with descriptions ready for bulk import is named **NFT-CSV.csv**
+- Reactjs template is included in the repo
 
 ## Using the React Template
 
