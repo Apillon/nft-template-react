@@ -1,20 +1,22 @@
-# NFT website template
+# NFT Workshop - Reactjs
+**Workshop duration:** 30 min
+**Workshop outputs:** Self hosted, self sovereign NFT collection
+## Workshop Contents
 
-This is a simple website template for getting NFT information directly from chain. It uses wallet (like metamask) to assure NFT connection.
+- Introduction to Apillon
+- Creating Images for the collection using Midjourney
+- Handling NFT metadata
+- Deploying NFT smart contract from the Dashboard
+- React NFT Collection template - GIT
+  - Template usage and adjustment
+  - Template upload to Hosting
+  - Custom domain setup
 
-## Acquire website files
 
-### Basic
 
-If you have no experience with git and would still like to use our template file to enable your freshly deployed NFT collection, feel free to click the green button "Code" on the upper right corner of this website and then selecting "Download ZIP".
-Once downloaded, the zip file includes all files you need to display your NFT collection. Before that happens you need to configure the file, as explained in Configure section.
+## Using the React Template
 
-### Advanced
-
-1. Fork the repo
-2. Configure .env
-3. Make changes to the website (optional)
-4. Deploy files to Apillon hosting
+This git already includes the react-js template that is able to connect to newly deployed collection, with minting and displaying functionalities. 
 
 ## Configure
 
