@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import NftNestedChild from './NftNestedChild'
 import { checkInputAddress, checkInputToken, getContract, getProvider, isTokenNestable } from '../lib/utils'
 import { toast } from 'react-toastify'
+import NftNestedChild from './NftNestedChild'
 import { ethers } from 'ethers'
 import Spinner from './Spinner'
+import { transactionError } from '../utils/errors'
 
 const NftNestable = ({ nft }) => {
   const [loadingAccept, setLoadingAccept] = useState(false)
@@ -32,9 +33,9 @@ const NftNestable = ({ nft }) => {
       if (fetchedPendingChildren && fetchedPendingChildren.length) {
         setPendingChild(fetchedPendingChildren[0])
       }
+      setHasChildren(Array.isArray(children) && children.length > 0)
+      setHasPendingChildren(Array.isArray(pendingChildren) && pendingChildren.length > 0)
     }
-    setHasChildren(Array.isArray(children) && children.length > 0)
-    setHasPendingChildren(Array.isArray(pendingChildren) && pendingChildren.length > 0)
 
     fetchData()
   }, [nft.id])
@@ -68,10 +69,10 @@ const NftNestable = ({ nft }) => {
       await nftContract
         .connect(getProvider().getSigner())
         .acceptChild(nft.id, 0, childAddress, childId)
-      toast.success('Token has been accepted')
+      toast('Token has been accepted', { type: 'success' })
     } catch (e) {
       console.log(e)
-      toast.error('Token could not be accepted!')
+      transactionError('Token could not be accepted!', e)
     }
 
     setLoadingAccept(false)
@@ -85,10 +86,10 @@ const NftNestable = ({ nft }) => {
       await nftContract
         .connect(getProvider().getSigner())
         .rejectAllChildren(parentId, pendingChildrenNum)
-      toast.success('Tokens has been rejected')
+      toast('Tokens has been rejected', { type: 'success' })
     } catch (e) {
       console.log(e)
-      toast.error('Tokens could not be rejected!')
+      transactionError('Tokens could not be rejected!', e)
     }
 
     setLoadingReject(false)
@@ -100,7 +101,7 @@ const NftNestable = ({ nft }) => {
     const childNftContract = getContract(addressNestMint)
     const isNestable = await isTokenNestable(childNftContract)
     if (!isNestable) {
-      toast.error('Token could not be minted! Check contract address.')
+      toast('Token could not be minted! Collection is not nestable.', { type: 'error' })
     } else {
       const nftContract = getContract()
       const price = await nftContract.pricePerMint()
@@ -109,14 +110,10 @@ const NftNestable = ({ nft }) => {
         await childNftContract
           .connect(getProvider().getSigner())
           .nestMint(nftContract.address, 1, nft.id, { value })
-        return true
+        toast('Token has been minted', { type: 'success' })
       } catch (e) {
         console.log(e)
-      }
-      if (status) {
-        toast.success('Token has been minted')
-      } else {
-        toast.error('Token could not be minted! Check contract address.')
+        transactionError('Token could not be minted! Check contract address.', e)
       }
     }
 
@@ -130,7 +127,7 @@ const NftNestable = ({ nft }) => {
     if (checkInputAddress(addressTransferFrom) && checkInputToken(tokenTransferFrom)) {
       console.log('Missing input data')
     } else if (!await isTokenNestable(childNftContract)) {
-      toast.error('Child token is not nestable')
+      toast('Child token is not nestable', { type: 'error' })
     } else {
       try {
         const provider = getProvider()
@@ -140,10 +137,10 @@ const NftNestable = ({ nft }) => {
           .connect(provider.getSigner())
           .nestTransferFrom(walletAddress, toAddress, tokenTransferFrom, nft.id, '0x')
 
-        toast.success('Token has been transferred')
+        toast('Token has been transferred', { type: 'success' })
       } catch (e) {
         console.log(e)
-        toast.error('Token could not be transferred! Wrong token address or token ID.')
+        transactionError('Token could not be transferred! Wrong token address or token ID.', e)
       }
     }
     setLoadingTransferFrom(false)
@@ -177,7 +174,6 @@ const NftNestable = ({ nft }) => {
       <div className="nested-tokens">
         <div className="nestable">
           <div className="nestable-actions">
-            <div className="nestable-actions">
               {hasPendingChildren && (
                 <div className="btn-group">
                   {pendingChild && (
@@ -250,15 +246,14 @@ const NftNestable = ({ nft }) => {
                 </button>
               </div>
             </div>
-          </div>
           { hasChildren && (
           <div>
             <p>
               <strong>Nested NFTs:</strong>
             </p>
             <div className="grid">
-              {children.map((child, key) => (
-                <NftNestedChild key={key} parent-id={nft.id} child-nft={child} />
+              {children.map((child) => (
+                <NftNestedChild key={child.tokenId.toNumber()} parentId={nft.id} childNft={child} />
               ))}
             </div>
           </div>

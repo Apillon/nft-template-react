@@ -1,8 +1,11 @@
-import React from 'react'
-// import Btn from './Btn'
+import React, { useEffect, useState } from 'react'
+import { getContract, getProvider } from '../lib/utils'
+import Spinner from './Spinner'
+import Btn from './Btn'
+import { toast } from 'react-toastify'
+import { transactionError } from '../utils/errors'
 
 const NftNestedChild = ({ parentId, childNft }) => {
-  /*
   const [metadata, setMetadata] = useState({})
   const [loading, setLoading] = useState(true)
   const [loadingTransfer, setLoadingTransfer] = useState(false)
@@ -10,7 +13,7 @@ const NftNestedChild = ({ parentId, childNft }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const childNftContract = getNftContract(childNft.contractAddress)
+        const childNftContract = getContract(childNft.contractAddress)
         const nftUrl = await childNftContract.tokenURI(childNft.tokenId.toBigInt())
 
         const response = await fetch(nftUrl)
@@ -24,32 +27,41 @@ const NftNestedChild = ({ parentId, childNft }) => {
           image: nftData.image
         })
       } catch (error) {
-        // Handle error
+        console.error(error)
+
+        toast('Apologies, we were unable to load NFT: ' + (childNft.tokenId.toNumber()), {
+          type: 'error'
+        })
       }
       setLoading(false)
     }
 
     fetchData()
-  }, [childNft.contractAddress, childNft.tokenId, parentId, getNftContract])
+  }, [childNft, parentId])
 
   const transferChildWrapper = async (contractAddress, childId) => {
     setLoadingTransfer(true)
 
-    const status = await transferChild(
-      parentId,
-      state.walletAddress,
-      0,
-      0,
-      contractAddress,
-      childId,
-      false,
-      '0x'
-    )
-
-    if (status) {
-      // Replace useNuxtApp().$toast.success with your toast notification logic
-    } else {
-      // Replace useNuxtApp().$toast.error with your toast notification logic
+    try {
+      const nftContract = getContract()
+      const provider = getProvider()
+      const walletAddress = await provider.getSigner().getAddress()
+      await nftContract
+        .connect(getProvider().getSigner())
+        .transferChild(
+          parentId,
+          walletAddress,
+          0,
+          0,
+          contractAddress,
+          childId,
+          false,
+          '0x'
+        )
+      toast('Child has been transferred', { type: 'success' })
+    } catch (e) {
+      console.log(e)
+      transactionError('Token could not be transferred! Wrong token address or token ID.', e)
     }
 
     setLoadingTransfer(false)
@@ -57,12 +69,14 @@ const NftNestedChild = ({ parentId, childNft }) => {
 
   return (
     <div>
-      {loading ? (
+      {loading
+        ? (
         <div className="relative">
           <Spinner />
         </div>
-      ) : (
-        metadata &&
+          )
+        : (
+            metadata &&
         metadata.name && (
           <div className="box">
             <img src={metadata.image} alt={metadata.name} />
@@ -81,13 +95,9 @@ const NftNestedChild = ({ parentId, childNft }) => {
               </div>
             </div>
           </div>
-        )
-      )}
+            )
+          )}
     </div>
-  )
-*/
-  return (
-  <div></div>
   )
 }
 

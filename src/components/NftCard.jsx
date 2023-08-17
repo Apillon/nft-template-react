@@ -32,11 +32,17 @@ export default function NftCard ({ id, nft, isCollectionNestable, myNFTs }) {
       )}
       </div>
       <Modal
+        className='modal'
         isOpen={isModalOpen}
         onRequestClose={closeModalNft}
         contentLabel="Example Modal"
       >
-        <NftNestable nft={nft} />
+        <div className='modal-close'>
+          <button className='btn-modal-exit' onClick={closeModalNft}></button>
+        </div>
+        <div className='modal-container'>
+          <NftNestable nft={nft} />
+        </div>
       </Modal>
     </div>
   )

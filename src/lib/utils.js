@@ -110,7 +110,7 @@ export const switchChain = async (chainId) => {
 
 export function checkInputAddress (address) {
   if (!address) {
-    toast.error('Enter contract address!')
+    toast('Enter contract address!', { type: 'error' })
     return false
   }
   return true
@@ -119,7 +119,7 @@ export function checkInputToken (token) {
   if (token && Number(token) >= 0) {
     return true
   }
-  toast.error('Enter token ID!')
+  toast('Enter token ID!', { type: 'error' })
   return false
 }
 

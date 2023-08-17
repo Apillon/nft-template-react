@@ -1,8 +1,8 @@
 import { ethers } from 'ethers'
 import React, { useRef, useState } from 'react'
-import { toast } from 'react-toastify'
 import nftAbi from '../lib/nftAbi'
 import Spinner from './Spinner'
+import { transactionError } from '../utils/errors'
 
 export default function Mint ({ price, provider, address }) {
   const [loading, setLoading] = useState(false)
@@ -20,7 +20,7 @@ export default function Mint ({ price, provider, address }) {
       const value = price.mul(ethers.BigNumber.from(amount)) // 0.1
       await nft.mint(address, amount, { value })
     } catch (e) {
-      toast('Unseccessful mint', { type: 'error' })
+      transactionError('Unsuccessful mint', e)
       console.error(e)
     }
 
