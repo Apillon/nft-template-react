@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { checkInputAddress, checkInputToken, getContract, getProvider, isTokenNestable } from '../lib/utils'
 import { toast } from 'react-toastify'
+
+import { checkInputAddress, checkInputToken, getContract, getProvider, isTokenNestable } from '../lib/utils'
+import { transactionError } from '../utils/errors'
 import NftNestedChild from './NftNestedChild'
 import { ethers } from 'ethers'
 import Spinner from './Spinner'
-import { transactionError } from '../utils/errors'
+import Btn from './Btn'
 
-const NftNestable = ({ nft }) => {
+const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
   const [loadingAccept, setLoadingAccept] = useState(false)
   const [loadingReject, setLoadingReject] = useState(false)
   const [loadingNestMint, setLoadingNestMint] = useState(false)
@@ -16,29 +18,31 @@ const NftNestable = ({ nft }) => {
   const [addressTransferFrom, setAddressTransferFrom] = useState('')
   const [tokenTransferFrom, setTokenTransferFrom] = useState(0)
 
-  const [pendingChild, setPendingChild] = useState(null)
+  const [pendingChild, setPendingChild] = useState({})
   const [pendingChildren, setPendingChildren] = useState([])
-  const [hasPendingChildren, setHasPendingChildren] = useState([])
+  const [hasPendingChildren, setHasPendingChildren] = useState(false)
   const [children, setChildren] = useState([])
-  const [hasChildren, setHasChildren] = useState([])
+  const [hasChildren, setHasChildren] = useState(false)
 
   useEffect(() => {
-    const fetchData = async () => {
-      const fetchedChildren = await childrenOf(nft.id)
-      setChildren(fetchedChildren)
-
-      const fetchedPendingChildren = await pendingChildrenOf(nft.id)
-      setPendingChildren(fetchedPendingChildren)
-
-      if (fetchedPendingChildren && fetchedPendingChildren.length) {
-        setPendingChild(fetchedPendingChildren[0])
-      }
-      setHasChildren(Array.isArray(children) && children.length > 0)
-      setHasPendingChildren(Array.isArray(pendingChildren) && pendingChildren.length > 0)
-    }
-
     fetchData()
-  }, [nft.id])
+  }, [nftId])
+  const fetchData = async () => {
+    // Children
+    const fetchedChildren = await childrenOf(nftId)
+    setChildren(fetchedChildren)
+    setHasChildren(Array.isArray(fetchedChildren) && fetchedChildren.length > 0)
+
+    // Pending Children
+    const fetchedPendingChildren = await pendingChildrenOf(nftId)
+    setPendingChildren(fetchedPendingChildren)
+
+    const hasPending = (Array.isArray(fetchedPendingChildren) && fetchedPendingChildren.length > 0)
+    setHasPendingChildren(hasPending)
+    if (hasPending) {
+      setPendingChild(fetchedPendingChildren[0])
+    }
+  }
 
   /** Nestable NFT */
   async function childrenOf (parentId) {
@@ -68,7 +72,7 @@ const NftNestable = ({ nft }) => {
       const nftContract = getContract()
       await nftContract
         .connect(getProvider().getSigner())
-        .acceptChild(nft.id, 0, childAddress, childId)
+        .acceptChild(nftId, 0, childAddress, childId)
       toast('Token has been accepted', { type: 'success' })
     } catch (e) {
       console.log(e)
@@ -109,7 +113,7 @@ const NftNestable = ({ nft }) => {
       try {
         await childNftContract
           .connect(getProvider().getSigner())
-          .nestMint(nftContract.address, 1, nft.id, { value })
+          .nestMint(nftContract.address, 1, nftId, { value })
         toast('Token has been minted', { type: 'success' })
       } catch (e) {
         console.log(e)
@@ -124,7 +128,7 @@ const NftNestable = ({ nft }) => {
     setLoadingTransferFrom(true)
     const childNftContract = getContract(addressTransferFrom)
 
-    if (checkInputAddress(addressTransferFrom) && checkInputToken(tokenTransferFrom)) {
+    if (!checkInputAddress(addressTransferFrom) || !checkInputToken(tokenTransferFrom)) {
       console.log('Missing input data')
     } else if (!await isTokenNestable(childNftContract)) {
       toast('Child token is not nestable', { type: 'error' })
@@ -135,7 +139,7 @@ const NftNestable = ({ nft }) => {
         const toAddress = process.env.REACT_APP_NFT_ADDRESS
         await childNftContract
           .connect(provider.getSigner())
-          .nestTransferFrom(walletAddress, toAddress, tokenTransferFrom, nft.id, '0x')
+          .nestTransferFrom(walletAddress, toAddress, tokenTransferFrom, nftId, '0x')
 
         toast('Token has been transferred', { type: 'success' })
       } catch (e) {
@@ -162,11 +166,11 @@ const NftNestable = ({ nft }) => {
     <div>
       <div className="parent-token">
         <div className="parent-token">
-          <div id={`nft_${nft.id}`} className="nft">
-            <img src={nft.image} className="nft_img" alt={nft.name} />
+          <div id={`nft_${nftId}`} className="nft">
+            <img src={nftImage} className="nft_img" alt={nftName} />
             <div className="nft_content">
-              <h3>{nft.name || `#${nft.id}`}</h3>
-              <p>{nft.description}</p>
+              <h3>{nftName || `#${nftId}`}</h3>
+              <p>{nftDescription}</p>
             </div>
           </div>
         </div>
@@ -174,43 +178,47 @@ const NftNestable = ({ nft }) => {
       <div className="nested-tokens">
         <div className="nestable">
           <div className="nestable-actions">
+
               {hasPendingChildren && (
                 <div className="btn-group">
-                  {pendingChild && (
+                  {pendingChild && pendingChild.tokenId && (
                     <div className="child-pending">
                       <div>
                         Address: <small>{pendingChild.contractAddress}</small>
                       </div>
                       <div>
-                        Id: <strong>{pendingChild.tokenId}</strong>
+                        Id: <strong>{pendingChild.tokenId.toNumber()}</strong>
                       </div>
                     </div>
                   )}
                   {pendingChild && (
                     <div className="actions">
-                      <button
+                      <Btn
                         disabled={loadingAccept}
+                        loading={loadingAccept}
                         onClick={() =>
                           acceptChild(pendingChild.contractAddress, pendingChild.tokenId)
                         }
                       >
-                        {loadingAccept ? 'Loading...' : 'Accept Child'}
-                      </button>
-                      <button
+                        Accept Child
+                      </Btn>
+                      <Btn
                         disabled={loadingReject}
-                        onClick={() => rejectAllChildren(nft.id, pendingChildren.length)}
+                        loading={loadingReject}
+                        onClick={() => rejectAllChildren(nftId, pendingChildren.length)}
                       >
-                        {loadingReject ? 'Loading...' : 'Reject All Children'}
-                      </button>
+                        Reject All Children
+                      </Btn>
                     </div>
                   )}
                 </div>
               )}
+
               <div className="btn-group">
                 <div className="field">
-                  <label htmlFor={`addressNestMint_${nft.id}`}>Contract Address:</label>
+                  <label htmlFor={`addressNestMint_${nftId}`}>Contract Address:</label>
                   <input
-                    id={`addressNestMint_${nft.id}`}
+                    id={`addressNestMint_${nftId}`}
                     value={addressNestMint}
                     type="text"
                     onChange={handleChangeNestMint}
@@ -222,18 +230,18 @@ const NftNestable = ({ nft }) => {
               </div>
               <div className="btn-group">
                 <div className="field">
-                  <label htmlFor={`addressTransferFrom_${nft.id}`}>Contract Address:</label>
+                  <label htmlFor={`addressTransferFrom_${nftId}`}>Contract Address:</label>
                   <input
-                    id={`addressTransferFrom_${nft.id}`}
+                    id={`addressTransferFrom_${nftId}`}
                     value={addressTransferFrom}
                     type="text"
                     onChange={handleChangeTransferFrom}
                   />
                 </div>
                 <div className="field">
-                  <label htmlFor={`tokenTransferFrom_${nft.id}`}>Token ID:</label>
+                  <label htmlFor={`tokenTransferFrom_${nftId}`}>Token ID:</label>
                   <input
-                    id={`tokenTransferFrom_${nft.id}`}
+                    id={`tokenTransferFrom_${nftId}`}
                     value={tokenTransferFrom}
                     type="number"
                     min={1}
@@ -246,18 +254,22 @@ const NftNestable = ({ nft }) => {
                 </button>
               </div>
             </div>
-          { hasChildren && (
-          <div>
-            <p>
-              <strong>Nested NFTs:</strong>
-            </p>
-            <div className="grid">
-              {children.map((child) => (
-                <NftNestedChild key={child.tokenId.toNumber()} parentId={nft.id} childNft={child} />
-              ))}
+           { hasChildren && (
+            <div>
+              <p>
+                <strong>Nested NFTs:</strong>
+              </p>
+              <div className="grid">
+                 {children.map((child) => (
+                  <NftNestedChild
+                    key={child.tokenId.toNumber()}
+                    parentId={nftId}
+                    tokenId={child.tokenId.toNumber()}
+                    contractAddress={child.contractAddress} />
+                 ))}
+              </div>
             </div>
-          </div>
-          ) }
+           ) }
         </div>
       </div>
     </div>

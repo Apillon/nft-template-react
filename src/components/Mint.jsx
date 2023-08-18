@@ -14,11 +14,14 @@ export default function Mint ({ price, provider, address }) {
     const NFT_ADDRESS = process.env.REACT_APP_NFT_ADDRESS
 
     try {
-      const nft = new ethers.Contract(NFT_ADDRESS, nftAbi, provider).connect(
+      const nftContract = new ethers.Contract(NFT_ADDRESS, nftAbi, provider).connect(
         provider.getSigner()
       )
-      const value = price.mul(ethers.BigNumber.from(amount)) // 0.1
-      await nft.mint(address, amount, { value })
+      const value = price.mul(ethers.BigNumber.from(amount))
+      const gasLimit = await nftContract
+        .connect(provider.getSigner())
+        .estimateGas.mint(address, amount, { value })
+      await nftContract.mint(address, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
     } catch (e) {
       transactionError('Unsuccessful mint', e)
       console.error(e)

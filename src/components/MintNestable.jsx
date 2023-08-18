@@ -1,49 +1,59 @@
-import { ethers } from 'ethers'
+import { BigNumber } from 'ethers'
 import React, { useState } from 'react'
-import nftAbi from '../lib/nftAbi'
-import Btn from './Btn'
-import Spinner from './Spinner'
+import { toast } from 'react-toastify'
 import { transactionError } from '../utils/errors'
+import { getContract, isTokenNestable } from '../lib/utils'
+import Spinner from './Spinner'
+import Btn from './Btn'
 
 export default function MintNestable ({ price, provider, address }) {
   const [loadingMint, setLoadingMint] = useState(false)
   const [loadingNestMint, setLoadingMintNestable] = useState(false)
-  const [amount, setAmount] = useState(1)
+  const [inputAddress, setInputAddress] = useState('')
+  const amount = 1
 
   async function mintWrapper () {
     setLoadingMint(true)
-    const NFT_ADDRESS = process.env.REACT_APP_NFT_ADDRESS
 
-    try {
-      const nft = new ethers.Contract(NFT_ADDRESS, nftAbi, provider).connect(provider.getSigner())
-      const value = price.mul(ethers.BigNumber.from(amount)) // 0.1
-      await nft.mint(address, amount, { value })
-    } catch (e) {
-      transactionError('Unsuccessful mint', e)
-      console.error(e)
-    }
+    mint(process.env.REACT_APP_NFT_ADDRESS)
 
     setLoadingMint(false)
   }
 
   async function childMintWrapper () {
     setLoadingMintNestable(true)
-    const NFT_ADDRESS = process.env.REACT_APP_NFT_ADDRESS
+    const contractAddress = inputAddress || process.env.REACT_APP_NFT_ADDRESS
 
-    try {
-      const nft = new ethers.Contract(NFT_ADDRESS, nftAbi, provider).connect(provider.getSigner())
-      const value = price.mul(ethers.BigNumber.from(amount)) // 0.1
-      await nft.mint(address, amount, { value })
-    } catch (e) {
-      transactionError('Unsuccessful mint', e)
-      console.error(e)
-    }
+    mint(contractAddress)
 
     setLoadingMintNestable(false)
   }
 
+  async function mint (contractAddress) {
+    const nftContract = getContract(contractAddress)
+    const isNestable = await isTokenNestable(nftContract)
+    if (!isNestable) {
+      toast('Token could not be minted! Collection is not nestable.', { type: 'error' })
+    } else {
+      const value = price.mul(BigNumber.from(amount))
+
+      try {
+        const gasLimit = await nftContract
+          .connect(provider.getSigner())
+          .estimateGas.mint(address, amount, { value })
+
+        await nftContract
+          .connect(provider.getSigner())
+          .mint(address, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
+      } catch (e) {
+        transactionError('Unsuccessful mint', e)
+        console.error(e)
+      }
+    }
+  }
+
   const handleChange = (event) => {
-    setAmount(event.target.value)
+    setInputAddress(event.target.value)
   }
 
   return (
@@ -61,7 +71,7 @@ export default function MintNestable ({ price, provider, address }) {
       <br />
       <div className="field">
         <label htmlFor="address">Contract Address:</label>
-        <input id="address" value={address} type="text" onChange={handleChange} />
+        <input id="address" value={inputAddress} type="text" onChange={handleChange} />
       </div>
       <button disabled={loadingNestMint} onClick={childMintWrapper}>
         {loadingNestMint ? <Spinner/> : 'Mint'}

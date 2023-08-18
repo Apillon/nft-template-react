@@ -6,7 +6,6 @@ import { addChain, getCurrentChain, switchChain, metamaskNotSupportedMessage, ge
 import Btn from './Btn'
 import NftGallery from './NftGallery'
 import CollectionInfo from './CollectionInfo'
-import Spinner from './Spinner'
 import IconWallet from './IconWallet'
 
 export default function Main () {
@@ -144,7 +143,9 @@ export default function Main () {
 
     setupMyNFTs()
 
-    await loadAllNFTs()
+    // await loadAllNFTs()
+    await loadMyNFTs()
+
     setTimeout(() => {
       setLoading(false)
     }, 300)
@@ -210,7 +211,7 @@ export default function Main () {
         const metadata = await fetch(url).then((response) => {
           return response.json()
         })
-        nfts.push({ id: i, ...metadata })
+        nfts.push({ id: id.toNumber(), ...metadata })
       } catch (e) {
         console.error(e)
 
@@ -260,12 +261,12 @@ export default function Main () {
         <div id="actions">
           <h2 className="text-center">Show NFTs:</h2>
           <div className="actions">
-            <button id="btnAllNFTs" onClick={() => loadAllNFTs()}>
-              {loadingNfts ? <Spinner /> : 'All nfts'}
-            </button>
-            <button id="myNFTs" onClick={() => loadMyNFTs()}>
-              {loadingMyNfts ? <Spinner /> : 'My nfts'}
-            </button>
+            <Btn loading={loadingNfts} onClick={() => loadAllNFTs()}>
+              {'All nfts'}
+            </Btn>
+            <Btn loading={loadingMyNfts} onClick={() => loadMyNFTs()}>
+              My nfts
+            </Btn>
           </div>
         </div>
       )}
