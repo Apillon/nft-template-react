@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Mint from './Mint'
 import MintNestable from './MintNestable'
 
-export default function collection ({ collection, provider, address, isCollectionNestable }) {
+export default function Collection ({ collection, provider, address, isCollectionNestable }) {
   const [totalSupply] = useState(collection.totalSupply)
   const [maxSupply] = useState(collection.maxSupply)
   const [dropStartDate, setDropStartDate] = useState(new Date())
