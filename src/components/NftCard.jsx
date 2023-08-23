@@ -23,7 +23,7 @@ export default function NftCard ({ id, nft, isCollectionNestable, myNFTs }) {
     <div className={styles.nft} id={'nft_' + id}>
       <img src={nft.image} className={styles.nft_img} alt={nft.name} />
       <div className={styles.nft_content}>
-        <h3>{nft.name || `#${id}`}</h3>
+        <h3>#{id} {nft.name}</h3>
         <p>{nft.description}</p>
       {isCollectionNestable && isMyNFT && (
                 <button onClick={() => openModalNft()}>

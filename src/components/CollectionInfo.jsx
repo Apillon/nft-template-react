@@ -1,7 +1,6 @@
 import { ethers } from 'ethers'
 import React, { useEffect, useState } from 'react'
 import Mint from './Mint'
-import MintNestable from './MintNestable'
 
 export default function Collection ({ collection, provider, address, isCollectionNestable }) {
   const [totalSupply] = useState(collection.totalSupply)
@@ -61,8 +60,30 @@ export default function Collection ({ collection, provider, address, isCollectio
     setSeconds(Math.floor((timeLeft % (1000 * 60)) / 1000))
   }
 
+  function collectionLink () {
+    const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
+    switch (CHAIN_ID) {
+      case '0x504':
+        return `https://moonbeam.moonscan.io/address/${collection.address}`
+      case '0x507':
+        return `https://moonbase.moonscan.io/address/${collection.address}`
+      case '0x250':
+        return `https://astar.subscan.io/address/${collection.address}`
+      default:
+        console.warn('Missing chainId')
+        return 'https://moonbeam.moonscan.io'
+    }
+  }
+
   return (
     <div className="collection-info" id="collection">
+      <div>
+        <b> Collection address: </b>
+        <a href={collectionLink()} target="_blank" rel="noreferrer">
+          {collection.address}
+          <img src="images/icon-open.svg" width={10} height={10} />
+        </a>
+      </div>
       <div>
         <b> Name: </b>
         {collection.name}
@@ -102,8 +123,6 @@ export default function Collection ({ collection, provider, address, isCollectio
                   </div>
                 </div>
               )
-            } else if (isCollectionNestable) {
-              return (<div className="drop"><MintNestable price={collection.price} provider={provider} address={address} /></div>)
             } else {
               return (<div className="drop"><Mint price={collection.price} provider={provider} address={address} /></div>)
             }

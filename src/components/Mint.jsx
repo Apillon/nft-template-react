@@ -1,8 +1,9 @@
-import { ethers } from 'ethers'
+import { BigNumber } from 'ethers'
 import React, { useRef, useState } from 'react'
-import nftAbi from '../lib/nftAbi'
 import Spinner from './Spinner'
 import { transactionError } from '../utils/errors'
+import { checkInputAmount, getContract } from '../lib/utils'
+import { toast } from 'react-toastify'
 
 export default function Mint ({ price, provider, address }) {
   const [loading, setLoading] = useState(false)
@@ -13,15 +14,23 @@ export default function Mint ({ price, provider, address }) {
     setLoading(true)
     const NFT_ADDRESS = process.env.REACT_APP_NFT_ADDRESS
 
+    if (!checkInputAmount(amount)) {
+      console.log('Wrong amount number')
+      return
+    }
     try {
-      const nftContract = new ethers.Contract(NFT_ADDRESS, nftAbi, provider).connect(
-        provider.getSigner()
-      )
-      const value = price.mul(ethers.BigNumber.from(amount))
+      const nftContract = getContract(NFT_ADDRESS)
+      const value = price.mul(BigNumber.from(amount))
+
       const gasLimit = await nftContract
         .connect(provider.getSigner())
         .estimateGas.mint(address, amount, { value })
-      await nftContract.mint(address, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
+
+      await nftContract
+        .connect(provider.getSigner())
+        .mint(address, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
+
+      toast('Token is being minted', { type: 'success' })
     } catch (e) {
       transactionError('Unsuccessful mint', e)
       console.error(e)

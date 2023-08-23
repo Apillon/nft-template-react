@@ -59,7 +59,7 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }) => {
           false,
           '0x'
         )
-      toast('Child has been transferred', { type: 'success' })
+      toast('Child is being transferred', { type: 'success' })
     } catch (e) {
       console.log(e)
       transactionError('Token could not be transferred! Wrong token address or token ID.', e)
@@ -82,7 +82,7 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }) => {
           <div className="box">
             <img src={metadata.image} alt={metadata.name} />
             <div className="box-content">
-              <h3>{metadata.name || `#${metadata.id}`}</h3>
+              <h3>#{metadata.id} {metadata.name}</h3>
               <p>{metadata.description}</p>
               <div className="btn-group">
                 <Btn

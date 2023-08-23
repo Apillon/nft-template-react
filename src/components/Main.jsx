@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { BigNumber } from 'ethers'
 import { toast } from 'react-toastify'
 
 import { addChain, getCurrentChain, switchChain, metamaskNotSupportedMessage, getProvider, getContract, isTokenNestable, getMyNftIDs } from '../lib/utils'
@@ -143,8 +142,7 @@ export default function Main () {
 
     setupMyNFTs()
 
-    // await loadAllNFTs()
-    await loadMyNFTs()
+    await loadAllNFTs()
 
     setTimeout(() => {
       setLoading(false)
@@ -155,6 +153,7 @@ export default function Main () {
     const contract = setupContract()
     return {
       name: await contract.name(),
+      address: contract.address,
       symbol: await contract.symbol(),
       maxSupply: await contract.maxSupply(),
       totalSupply: await contract.totalSupply(),
@@ -163,12 +162,9 @@ export default function Main () {
       drop: await contract.isDrop(),
       dropStart: await contract.dropStart(),
       reserve: await contract.reserve(),
-      price: BigNumber.from('4'),
-      royaltiesFees: BigNumber.from('42'),
-      royaltiesAddress: ''
-      // price: await contract.price(),
-      // royaltiesFees: await contract.royaltiesFees(),
-      // royaltiesAddress: await contract.royaltiesAddress()
+      price: await contract.pricePerMint(),
+      royaltiesFees: await contract.getRoyaltyPercentage(),
+      royaltiesAddress: await contract.getRoyaltyRecipient()
     }
   }
 

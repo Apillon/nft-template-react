@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
+import { Tooltip } from 'react-tooltip'
 
 import { checkInputAddress, checkInputToken, getContract, getProvider, isTokenNestable } from '../lib/utils'
 import { transactionError } from '../utils/errors'
 import NftNestedChild from './NftNestedChild'
-import { ethers } from 'ethers'
+import { BigNumber } from 'ethers'
 import Spinner from './Spinner'
 import Btn from './Btn'
 
@@ -14,8 +15,8 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
   const [loadingNestMint, setLoadingNestMint] = useState(false)
   const [loadingTransferFrom, setLoadingTransferFrom] = useState(false)
 
-  const [addressNestMint, setAddressNestMint] = useState('')
-  const [addressTransferFrom, setAddressTransferFrom] = useState('')
+  const [addressNestMint, setAddressNestMint] = useState(process.env.REACT_APP_NFT_ADDRESS)
+  const [addressTransferFrom, setAddressTransferFrom] = useState(process.env.REACT_APP_NFT_ADDRESS)
   const [tokenTransferFrom, setTokenTransferFrom] = useState(0)
 
   const [pendingChild, setPendingChild] = useState({})
@@ -73,7 +74,7 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
       await nftContract
         .connect(getProvider().getSigner())
         .acceptChild(nftId, 0, childAddress, childId)
-      toast('Token has been accepted', { type: 'success' })
+      toast('Token is being accepted', { type: 'success' })
     } catch (e) {
       console.log(e)
       transactionError('Token could not be accepted!', e)
@@ -90,7 +91,7 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
       await nftContract
         .connect(getProvider().getSigner())
         .rejectAllChildren(parentId, pendingChildrenNum)
-      toast('Tokens has been rejected', { type: 'success' })
+      toast('Tokens is being rejected', { type: 'success' })
     } catch (e) {
       console.log(e)
       transactionError('Tokens could not be rejected!', e)
@@ -102,19 +103,31 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
   const childNestMint = async () => {
     setLoadingNestMint(true)
 
+    if (!checkInputAddress(addressNestMint)) {
+      console.log('Missing input data')
+      setLoadingNestMint(false)
+      return
+    }
     const childNftContract = getContract(addressNestMint)
     const isNestable = await isTokenNestable(childNftContract)
+
     if (!isNestable) {
       toast('Token could not be minted! Collection is not nestable.', { type: 'error' })
     } else {
       const nftContract = getContract()
-      const price = await nftContract.pricePerMint()
-      const value = price.mul(ethers.BigNumber.from(1))
+      const price = await childNftContract.pricePerMint()
+      const value = price.mul(BigNumber.from(1))
+
       try {
+        const gasLimit = await childNftContract
+          .connect(getProvider().getSigner())
+          .estimateGas.nestMint(nftContract.address, 1, nftId, { value })
+
         await childNftContract
           .connect(getProvider().getSigner())
-          .nestMint(nftContract.address, 1, nftId, { value })
-        toast('Token has been minted', { type: 'success' })
+          .nestMint(nftContract.address, 1, nftId, { value, gasLimit: gasLimit.mul(11).div(10) })
+
+        toast('Token is being minted', { type: 'success' })
       } catch (e) {
         console.log(e)
         transactionError('Token could not be minted! Check contract address.', e)
@@ -137,11 +150,12 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
         const provider = getProvider()
         const walletAddress = await provider.getSigner().getAddress()
         const toAddress = process.env.REACT_APP_NFT_ADDRESS
+
         await childNftContract
           .connect(provider.getSigner())
           .nestTransferFrom(walletAddress, toAddress, tokenTransferFrom, nftId, '0x')
 
-        toast('Token has been transferred', { type: 'success' })
+        toast('Token is being transferred', { type: 'success' })
       } catch (e) {
         console.log(e)
         transactionError('Token could not be transferred! Wrong token address or token ID.', e)
@@ -169,7 +183,7 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
           <div id={`nft_${nftId}`} className="nft">
             <img src={nftImage} className="nft_img" alt={nftName} />
             <div className="nft_content">
-              <h3>{nftName || `#${nftId}`}</h3>
+              <h3>#{nftId} {nftName}</h3>
               <p>{nftDescription}</p>
             </div>
           </div>
@@ -216,7 +230,15 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
 
               <div className="btn-group">
                 <div className="field">
-                  <label htmlFor={`addressNestMint_${nftId}`}>Contract Address:</label>
+                  <label htmlFor={`addressNestMint_${nftId}`}>
+                    <span>Contract Address</span>
+                    <a id={`infoNestMint_${nftId}`}>
+                      <img src="images/info.svg" width={16} height={16} />
+                    </a>
+                    <Tooltip anchorSelect={`#infoNestMint_${nftId}`}type='warning' effect='solid'>
+                      <span>Enter collection address from where you want to mint NFT and transfer it to this NFT. Initial address is from this collection.</span>
+                    </Tooltip>
+                  </label>
                   <input
                     id={`addressNestMint_${nftId}`}
                     value={addressNestMint}
@@ -225,12 +247,20 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
                   />
                 </div>
                 <button disabled={loadingNestMint} onClick={childNestMint}>
-                  {loadingNestMint ? <Spinner /> : 'Nest Mint'}
+                  {loadingNestMint ? <Spinner /> : 'Mint Child'}
                 </button>
               </div>
               <div className="btn-group">
                 <div className="field">
-                  <label htmlFor={`addressTransferFrom_${nftId}`}>Contract Address:</label>
+                  <label htmlFor={`addressTransferFrom_${nftId}`}>
+                    <span>Contract Address</span>
+                    <a id={`infoTransferFrom_${nftId}`}>
+                      <img src="images/info.svg" width={16} height={16} />
+                    </a>
+                    <Tooltip anchorSelect={`#infoTransferFrom_${nftId}`}type='warning' effect='solid'>
+                      <span>Enter collection address from where you want to transfer NFT. Initial address is from this collection.</span>
+                    </Tooltip>
+                  </label>
                   <input
                     id={`addressTransferFrom_${nftId}`}
                     value={addressTransferFrom}
@@ -239,7 +269,14 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
                   />
                 </div>
                 <div className="field">
-                  <label htmlFor={`tokenTransferFrom_${nftId}`}>Token ID:</label>
+                  <label htmlFor={`tokenTransferFrom_${nftId}`}>
+                    <span>Token ID</span>
+                    <a id={`infoTransferFromTokenId_${nftId}`}>
+                      <img src="images/info.svg" width={16} height={16} />
+                    </a>
+                    <Tooltip anchorSelect={`#infoTransferFromTokenId_${nftId}`}type='warning' effect='solid'>
+                      <span>With Token ID you choose which token you will transfer.</span>
+                    </Tooltip></label>
                   <input
                     id={`tokenTransferFrom_${nftId}`}
                     value={tokenTransferFrom}
@@ -250,7 +287,7 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
                   />
                 </div>
                 <button disabled={loadingTransferFrom} onClick={nestTransferFrom}>
-                  {loadingTransferFrom ? 'Loading...' : 'Nest Transfer From'}
+                  {loadingTransferFrom ? <Spinner /> : 'Nest Transfer From'}
                 </button>
               </div>
             </div>

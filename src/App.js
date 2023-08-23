@@ -1,5 +1,7 @@
 import './styles/globals.css'
 import 'react-toastify/dist/ReactToastify.css'
+import 'react-tooltip/dist/react-tooltip.css'
+
 import React from 'react'
 import Modal from 'react-modal'
 import { ToastContainer } from 'react-toastify'

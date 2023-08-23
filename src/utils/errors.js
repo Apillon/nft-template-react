@@ -8,7 +8,7 @@ export function transactionError (msg, error) {
           ? error.data.message
           : (typeof error === 'object' && error?.message) ? error.message : JSON.stringify(error)
 
-    if (errorMsg.includes('rejected')) {
+    if (errorMsg.includes('rejected') || errorMsg.includes('denied')) {
       toast('Transaction has been rejected', { type: 'info' })
       return
     } else if (errorMsg.includes('OutOfFund')) {
