@@ -47,10 +47,18 @@ Before uploading the website to Apillon hosting, feel free to edit the code, add
 To preview the website on your computer you need to serve a http server from the root folder of the website. For example, you can run node package http-server from root folder like this:
 
 ```sh
+npm install
 npm run dev
 ```
 
 ## Deploy to Apillon Hosting
+
+To deploy the website on Apillon hosting you need to build project with a command below:
+
+```sh
+npm run build
+```
+And then deploy folder **build** according to this documentation: [Wiki](https://wiki.apillon.io/build/2-web3-services.html#web3-hosting)
 
 ### Basic
 

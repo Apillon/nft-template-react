@@ -62,7 +62,7 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }) => {
       toast('Child is being transferred', { type: 'success' })
     } catch (e) {
       console.log(e)
-      transactionError('Token could not be transferred! Wrong token address or token ID.', e)
+      transactionError('Token could not be transferred!', e)
     }
 
     setLoadingTransfer(false)
