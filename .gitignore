@@ -64,10 +64,6 @@ typings/
 # Next.js build output
 .next
 
-# Lock files
-package-lock.json
-yarn.lock
-
 # dotenv environment variables file
 .env.test
 
