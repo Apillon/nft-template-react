@@ -136,7 +136,7 @@ export const getProvider = () => {
 }
 
 export const getContract = (contractAddress) => {
-  const NFT_ADDRESS = process.env.REACT_APP_NFT_ADDRESS
+  const NFT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS
   return new ethers.Contract(contractAddress || NFT_ADDRESS, nftAbi, getProvider())
 }
 

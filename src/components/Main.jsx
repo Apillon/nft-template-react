@@ -211,7 +211,7 @@ export default function Main () {
       } catch (e) {
         console.error(e)
 
-        toast('Apologies, we were unable to load NFT: ' + (i + 1), {
+        toast('Apologies, we were unable to load NFTs metadata.', {
           type: 'error'
         })
       }
@@ -233,7 +233,6 @@ export default function Main () {
             collection={collectionInfo}
             provider={provider}
             address={address}
-            isCollectionNestable={collectionNestable}
           />
         )}
 

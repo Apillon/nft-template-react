@@ -15,8 +15,8 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
   const [loadingNestMint, setLoadingNestMint] = useState(false)
   const [loadingTransferFrom, setLoadingTransferFrom] = useState(false)
 
-  const [addressNestMint, setAddressNestMint] = useState(process.env.REACT_APP_NFT_ADDRESS)
-  const [addressTransferFrom, setAddressTransferFrom] = useState(process.env.REACT_APP_NFT_ADDRESS)
+  const [addressNestMint, setAddressNestMint] = useState(process.env.REACT_APP_CONTRACT_ADDRESS)
+  const [addressTransferFrom, setAddressTransferFrom] = useState(process.env.REACT_APP_CONTRACT_ADDRESS)
   const [tokenTransferFrom, setTokenTransferFrom] = useState(0)
 
   const [pendingChild, setPendingChild] = useState({})
@@ -149,7 +149,7 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
       try {
         const provider = getProvider()
         const walletAddress = await provider.getSigner().getAddress()
-        const toAddress = process.env.REACT_APP_NFT_ADDRESS
+        const toAddress = process.env.REACT_APP_CONTRACT_ADDRESS
 
         await childNftContract
           .connect(provider.getSigner())
@@ -231,12 +231,12 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
               <div className="btn-group">
                 <div className="field">
                   <label htmlFor={`addressNestMint_${nftId}`}>
-                    <span>Contract Address</span>
+                    <span>Child Contract Address</span>
                     <a id={`infoNestMint_${nftId}`}>
                       <img src="images/info.svg" width={16} height={16} />
                     </a>
                     <Tooltip anchorSelect={`#infoNestMint_${nftId}`}type='warning' effect='solid'>
-                      <span>Enter collection address from where you want to mint NFT and transfer it to this NFT. Initial address is from this collection.</span>
+                      <span>Enter child collection address from where you want to mint NFT and transfer it to this NFT. Initial address is from this collection.</span>
                     </Tooltip>
                   </label>
                   <input
@@ -247,18 +247,18 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
                   />
                 </div>
                 <button disabled={loadingNestMint} onClick={childNestMint}>
-                  {loadingNestMint ? <Spinner /> : 'Mint Child'}
+                  {loadingNestMint ? <Spinner /> : `Nest Mint Child under ${nftName}` }
                 </button>
               </div>
               <div className="btn-group">
                 <div className="field">
                   <label htmlFor={`addressTransferFrom_${nftId}`}>
-                    <span>Contract Address</span>
+                    <span>Child Contract Address</span>
                     <a id={`infoTransferFrom_${nftId}`}>
                       <img src="images/info.svg" width={16} height={16} />
                     </a>
                     <Tooltip anchorSelect={`#infoTransferFrom_${nftId}`}type='warning' effect='solid'>
-                      <span>Enter collection address from where you want to transfer NFT. Initial address is from this collection.</span>
+                      <span>Enter child collection address from where you want to transfer NFT. Initial address is from this collection.</span>
                     </Tooltip>
                   </label>
                   <input
@@ -287,7 +287,7 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
                   />
                 </div>
                 <button disabled={loadingTransferFrom} onClick={nestTransferFrom}>
-                  {loadingTransferFrom ? <Spinner /> : 'Nest Transfer From'}
+                  {loadingTransferFrom ? <Spinner /> : `Nest NFT under ${nftName}`}
                 </button>
               </div>
             </div>

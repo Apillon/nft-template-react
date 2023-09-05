@@ -15,14 +15,14 @@ export default function MintNestable ({ price, provider, address }) {
   async function mintWrapper () {
     setLoadingMint(true)
 
-    mint(process.env.REACT_APP_NFT_ADDRESS)
+    mint(process.env.REACT_APP_CONTRACT_ADDRESS)
 
     setLoadingMint(false)
   }
 
   async function childMintWrapper () {
     setLoadingMintNestable(true)
-    const contractAddress = inputAddress || process.env.REACT_APP_NFT_ADDRESS
+    const contractAddress = inputAddress || process.env.REACT_APP_CONTRACT_ADDRESS
 
     mint(contractAddress)
 
@@ -70,7 +70,7 @@ export default function MintNestable ({ price, provider, address }) {
       </div>
       <br />
       <div className="field">
-        <label htmlFor="address">Contract Address:</label>
+        <label htmlFor="address">Child Contract Address:</label>
         <input id="address" value={inputAddress} type="text" onChange={handleChange} />
       </div>
       <button disabled={loadingNestMint} onClick={childMintWrapper}>

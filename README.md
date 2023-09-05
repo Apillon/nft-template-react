@@ -29,12 +29,12 @@ To configure the template, do the following:
 Example:
 
 ```sh
-const nftAddress = ""; // Paste the address of the NFT collection between the parenthesis
+REACT_APP_CONTRACT_ADDRESS = ""; // Paste the address of the NFT collection between the parenthesis
 
 // uncomment the chain you are using by deleting the slashes
-// const chainId = "0x507"; // Moonbase
-// const chainId = "0x504"; // Moonbeam
-// const chainId = "0x250"; // Astar
+// REACT_APP_CHAIN_ID = "0x507"; // Moonbase
+// REACT_APP_CHAIN_ID = "0x504"; // Moonbeam
+// REACT_APP_CHAIN_ID = "0x250"; // Astar
 ```
 
 Once you have updated the .env. file, save it. Now the website files are ready to be deployed.

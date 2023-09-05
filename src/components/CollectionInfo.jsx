@@ -1,8 +1,8 @@
-import { ethers } from 'ethers'
+import { constants, ethers } from 'ethers'
 import React, { useEffect, useState } from 'react'
 import Mint from './Mint'
 
-export default function Collection ({ collection, provider, address, isCollectionNestable }) {
+export default function Collection ({ collection, provider, address }) {
   const [totalSupply] = useState(collection.totalSupply)
   const [maxSupply] = useState(collection.maxSupply)
   const [dropStartDate, setDropStartDate] = useState(new Date())
@@ -93,12 +93,23 @@ export default function Collection ({ collection, provider, address, isCollectio
         {collection.symbol}
       </div>
       <div>
+        <b> Revocable: </b>
+        {collection.revokable ? 'TRUE' : 'FALSE'}
+      </div>
+      <div>
         <b> Soulbound: </b>
         {collection.soulbound ? 'TRUE' : 'FALSE'}
       </div>
       <div>
         <b> Supply: </b>
-        {totalSupply.toString()}/{maxSupply.toString()}
+        {(() => {
+          if (maxSupply.toString() === constants.MaxUint256.toString()) {
+            return (<div>{totalSupply.toString()} / &infin;</div>)
+          } else {
+            return (<div>{totalSupply.toString()} / {maxSupply.toString()}</div>)
+          }
+        })()}
+
       </div>
       {/* Is drop */}
       {collection.drop && (

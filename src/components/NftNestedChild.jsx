@@ -30,7 +30,7 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }) => {
       } catch (error) {
         console.error(error)
 
-        toast('Apologies, we were unable to load NFT: ' + (tokenId), {
+        toast('Apologies, we were unable to load NFTs metadata.', {
           type: 'error'
         })
       }
