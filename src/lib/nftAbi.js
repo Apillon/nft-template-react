@@ -102,6 +102,6 @@ const nftAbi = [
   'function transferOwnership(address newOwner)',
   'function updateRoyaltyRecipient(address newRoyaltyRecipient)',
   'function walletOfOwner(address _owner) view returns (uint256[])',
-  'function withdrawRaised(address to, uint256 amount)',
+  'function withdrawRaised(address to, uint256 amount)'
 ]
 export default nftAbi
