@@ -15,14 +15,14 @@ export default function MintNestable ({ price, provider, address }) {
   async function mintWrapper () {
     setLoadingMint(true)
 
-    mint(process.env.REACT_APP_CONTRACT_ADDRESS)
+    mint(import.meta.env.VITE_CONTRACT_ADDRESS)
 
     setLoadingMint(false)
   }
 
   async function childMintWrapper () {
     setLoadingMintNestable(true)
-    const contractAddress = inputAddress || process.env.REACT_APP_CONTRACT_ADDRESS
+    const contractAddress = inputAddress || import.meta.env.VITE_CONTRACT_ADDRESS
 
     mint(contractAddress)
 

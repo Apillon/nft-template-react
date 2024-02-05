@@ -8,7 +8,7 @@ import CollectionInfo from './CollectionInfo'
 import IconWallet from './IconWallet'
 
 export default function Main () {
-  const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
+  const CHAIN_ID = '0x507'
 
   const [provider, setProvider] = useState(null)
   const [contract, setContract] = useState(null)

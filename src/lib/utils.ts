@@ -34,7 +34,7 @@ export const metamaskNotSupportedMessage = () => {
     : 'Your browser does not support MetaMask, please use another browser!'
 }
 
-export const addChain = async (chainId) => {
+export const addChain = async (chainId: string) => {
   const { ethereum } = window
 
   if (chainId === 0x507) {
@@ -100,7 +100,7 @@ export const getCurrentChain = async () => {
   const { ethereum } = window
   return await ethereum.request({ method: 'eth_chainId' })
 }
-export const switchChain = async (chainId) => {
+export const switchChain = async (chainId: string) => {
   const { ethereum } = window
   await ethereum.request({
     method: 'wallet_switchEthereumChain',
@@ -108,21 +108,21 @@ export const switchChain = async (chainId) => {
   })
 }
 
-export function checkInputAddress (address) {
+export function checkInputAddress (address: string) {
   if (!address) {
     toast('Enter contract address!', { type: 'warning' })
     return false
   }
   return true
 }
-export function checkInputAmount (amount) {
+export function checkInputAmount (amount: number) {
   if (amount && Number(amount) > 0 && Number(amount) <= 5) {
     return true
   }
   toast('Enter valid amount (number from 1 to 5)!', { type: 'warning' })
   return false
 }
-export function checkInputToken (token) {
+export function checkInputToken (token: string) {
   if (token && Number(token) >= 0) {
     return true
   }
@@ -135,12 +135,12 @@ export const getProvider = () => {
   return new ethers.providers.Web3Provider(ethereum)
 }
 
-export const getContract = (contractAddress) => {
-  const NFT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS
+export const getContract = (contractAddress?: string) => {
+  const NFT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS
   return new ethers.Contract(contractAddress || NFT_ADDRESS, nftAbi, getProvider())
 }
 
-export async function isTokenNestable (contract) {
+export async function isTokenNestable (contract: Contract) {
   try {
     return await contract.supportsInterface('0x42b0e56f')
   } catch (e) {
@@ -149,7 +149,7 @@ export async function isTokenNestable (contract) {
   }
 }
 
-export async function getMyNftIDs (contract, walletAddress) {
+export async function getMyNftIDs (contract: Contract, walletAddress: string) {
   const nftIDs = []
   try {
     const balance = await contract.balanceOf(walletAddress)

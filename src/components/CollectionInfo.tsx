@@ -61,7 +61,7 @@ export default function Collection ({ collection, provider, address }) {
   }
 
   function collectionLink () {
-    const CHAIN_ID = process.env.REACT_APP_CHAIN_ID
+    const CHAIN_ID = import.meta.env.VITE_CHAIN_ID
     switch (CHAIN_ID) {
       case '0x504':
         return `https://moonbeam.moonscan.io/address/${collection.address}`

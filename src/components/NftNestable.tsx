@@ -15,8 +15,8 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
   const [loadingNestMint, setLoadingNestMint] = useState(false)
   const [loadingTransferFrom, setLoadingTransferFrom] = useState(false)
 
-  const [addressNestMint, setAddressNestMint] = useState(process.env.REACT_APP_CONTRACT_ADDRESS)
-  const [addressTransferFrom, setAddressTransferFrom] = useState(process.env.REACT_APP_CONTRACT_ADDRESS)
+  const [addressNestMint, setAddressNestMint] = useState(import.meta.env.VITE_CONTRACT_ADDRESS)
+  const [addressTransferFrom, setAddressTransferFrom] = useState(import.meta.env.VITE_CONTRACT_ADDRESS)
   const [tokenTransferFrom, setTokenTransferFrom] = useState(0)
 
   const [pendingChild, setPendingChild] = useState({})
@@ -149,7 +149,7 @@ const NftNestable = ({ nftId, nftName, nftDescription, nftImage }) => {
       try {
         const provider = getProvider()
         const walletAddress = await provider.getSigner().getAddress()
-        const toAddress = process.env.REACT_APP_CONTRACT_ADDRESS
+        const toAddress = import.meta.env.VITE_CONTRACT_ADDRESS
 
         await childNftContract
           .connect(provider.getSigner())

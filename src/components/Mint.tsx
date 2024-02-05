@@ -12,7 +12,7 @@ export default function Mint ({ price, provider, address }) {
 
   async function mint () {
     setLoading(true)
-    const NFT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS
+    const NFT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS
 
     if (!checkInputAmount(amount)) {
       console.log('Wrong amount number')
