@@ -7,12 +7,6 @@ export enum Chains {
   ASTAR = '0x250',
 }
 declare global {
-  /**
-   * Window
-   */
-  interface Window {
-    ethereum: any;
-  }
   interface NftResponse {
     name: string;
     description: string;

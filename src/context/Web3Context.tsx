@@ -1,35 +1,68 @@
-import { createContext, FC, ReactNode, useContext } from "react";
-import useWeb3Provider, { IWeb3State } from "../hooks/useWeb3Provider";
+import { createContext, FC, ReactNode, useContext } from 'react'
+import useWeb3Provider, { IWeb3State } from '../hooks/useWeb3Provider'
 
 export interface IWeb3Context {
-  connectWallet: () => Promise<any | undefined>;
-  disconnect: () => void;
-  state: IWeb3State;
+  disconnect: () => void
+  filterNfts: (filter: boolean) => void
+  initContract: (contractAddress?: string, provider?: Provider) => Contract
+  getCollectionInfo: (contract: Contract) => Promise<CollectionInfo>
+  getContract: (address: string) => Contract
+  getMyNftIDs: (contractAddress?: string) => Promise<Array<number>>
+  getNft: (nftId: number) => Nft | undefined
+  getNfts: () => Promise<Nft[]>
+  getProvider: () => Provider
+  getSigner: () => Promise<Signer>
+  resetNft: () => void
+  setState: (s: IWeb3State) => void
+  state: IWeb3State
 }
 
-const Web3Context = createContext<IWeb3Context | null>(null);
+const Web3Context = createContext<IWeb3Context | null>(null)
 
 type Props = {
-  children: ReactNode;
-};
-
+  children: ReactNode
+}
 
 const Web3ContextProvider: FC<Props> = ({ children }) => {
-  const { connectWallet, disconnect, state } = useWeb3Provider();
+  const {
+    disconnect,
+    filterNfts,
+    initContract,
+    getCollectionInfo,
+    getContract,
+    getMyNftIDs,
+    getNft,
+    getNfts,
+    getProvider,
+    getSigner,
+    resetNft,
+    setState,
+    state
+  } = useWeb3Provider()
 
   return (
     <Web3Context.Provider
       value={{
-        connectWallet,
         disconnect,
-        state,
+        filterNfts,
+        initContract,
+        getCollectionInfo,
+        getContract,
+        getMyNftIDs,
+        getNft,
+        getNfts,
+        getProvider,
+        getSigner,
+        resetNft,
+        setState,
+        state
       }}
     >
       {children}
     </Web3Context.Provider>
-  );
-};
+  )
+}
 
-export default Web3ContextProvider;
+export default Web3ContextProvider
 
-export const useWeb3Context = () => useContext(Web3Context);
+export const useWeb3Context = () => useContext(Web3Context)

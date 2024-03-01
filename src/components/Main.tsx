@@ -1,226 +1,85 @@
-import React, { useState } from 'react'
-import { toast } from 'react-toastify'
-
-import { addChain, getCurrentChain, switchChain, metamaskNotSupportedMessage, getProvider, getContract, isTokenNestable, getMyNftIDs } from '../lib/utils'
+import useWeb3Provider from '../hooks/useWeb3Provider'
 import Btn from './Btn'
-import NftGallery from './NftGallery'
+import NftGallery from './Nft/NftGallery'
 import CollectionInfo from './CollectionInfo'
-import IconWallet from './IconWallet'
+import WalletConnect from './WalletConnect'
+import { toast } from 'react-toastify'
+import {
+  addChain,
+  changeChain,
+  getCurrentChain,
+  initProvider,
+  isCollectionNestable,
+  metamaskNotSupportedMessage
+} from '../lib/utils'
+import { CHAIN_ID, CONTRACT_ADDRESS } from '../lib/config'
+import { ethers } from 'ethers'
 
-export default function Main () {
-  const CHAIN_ID = '0x507'
+export default function Main() {
+  const { state, setState, filterNfts, initContract, getCollectionInfo, getMyNftIDs, getNfts } = useWeb3Provider()
 
-  const [provider, setProvider] = useState(null)
-  const [contract, setContract] = useState(null)
-  const [address, setAddress] = useState()
+  const connectWallet = async () => {
+    if (state.isAuthenticated) return
 
-  const [loading, setLoading] = useState(false)
-  const [loadingNfts, setLoadingNfts] = useState(false)
-  const [loadingMyNfts, setLoadingMyNfts] = useState(false)
-
-  const [currentChain, setCurrentChain] = useState()
-  const [collectionInfo, setCollectionInfo] = useState(null)
-  const [collectionNestable, setCollectionNestable] = useState(null)
-  const [myNFTs, setMyNFTs] = useState([])
-
-  const [nfts] = useState([])
-  const [filterByAddress, setFilterByAddress] = useState(false)
-
-  const setupProvider = () => {
-    if (provider) return provider
-
-    const newProvider = getProvider()
-    setProvider(newProvider)
-
-    return newProvider
-  }
-  const setupContract = () => {
-    if (contract) return contract
-
-    const newContract = getContract()
-    setContract(newContract)
-
-    return newContract
-  }
-  const setupCurrentChain = async () => {
-    if (currentChain) return currentChain
-
-    const newCurrentChain = await getCurrentChain()
-    setCurrentChain(newCurrentChain)
-
-    return newCurrentChain
-  }
-  const setupAddress = async () => {
-    if (address) return address
-
-    const provider = setupProvider()
-    const newAddress = await provider.getSigner().getAddress()
-    setAddress(newAddress)
-
-    return newAddress
-  }
-  const setupCollectionInfo = async () => {
-    if (collectionInfo) return collectionInfo
-
-    const newInfo = await getCollectionInfo()
-    setCollectionInfo(newInfo)
-
-    return newInfo
-  }
-  const setupCollectionType = async () => {
-    if (collectionNestable !== null) return collectionNestable
-
-    const collectionType = await isTokenNestable(setupContract())
-    setCollectionNestable(collectionType)
-
-    return collectionType
-  }
-  const setupMyNFTs = async () => {
-    if (Array.isArray(myNFTs) && myNFTs.length > 0) return myNFTs
-
-    const nfts = await getMyNftIDs(setupContract(), setupAddress())
-    setMyNFTs(nfts)
-
-    return nfts
-  }
-
-  async function connectWallet () {
-    const { ethereum } = window
-    if (!ethereum) {
-      toast(metamaskNotSupportedMessage(), { type: 'error' })
-      return
-    }
-    setLoading(true)
-
-    setupProvider()
-    setupContract()
-
-    let currentChain = null
     try {
-      currentChain = await setupCurrentChain()
-    } catch (error) {
-      console.log(error)
-    }
+      const { ethereum } = window
 
-    if (currentChain !== CHAIN_ID) {
-      try {
-        await switchChain(CHAIN_ID)
+      if (!ethereum) {
+        toast(metamaskNotSupportedMessage(), { type: 'error' })
+        return
+      }
+      let provider = initProvider()
+      let contract = initContract(CONTRACT_ADDRESS, provider)
 
-        setupProvider()
-        setupContract()
-        currentChain = await setupCurrentChain()
-      } catch (e) {
-        toast('Error connecting to metamask', { type: 'error' })
+      const accounts: string[] = await provider.send('eth_requestAccounts', [])
 
-        try {
-          await addChain(CHAIN_ID)
-        } catch (e) {
-          toast('' + e, { type: 'error' })
+      if (accounts.length > 0) {
+        let currentChain = await getCurrentChain()
+        if (currentChain !== CHAIN_ID) {
+          try {
+            await changeChain(CHAIN_ID)
+
+            provider = new ethers.providers.Web3Provider(ethereum)
+            contract = initContract(CONTRACT_ADDRESS, provider)
+            currentChain = await getCurrentChain()
+          } catch (e) {
+            toast('Error connecting to metamask', { type: 'error' })
+
+            try {
+              await addChain(CHAIN_ID)
+            } catch (e) {
+              toast('' + e, { type: 'error' })
+            }
+          }
         }
+        const contracts = state.contracts
+        contracts[CONTRACT_ADDRESS] = contract
+
+        state.provider = provider
+        setState({ ...state, provider })
+
+        state.currentChain = currentChain
+        setState({ ...state, currentChain })
+
+        state.signer = provider.getSigner()
+        state.walletAddress = await state.signer.getAddress()
+        state.isNestable = await isCollectionNestable(contract)
+
+        state.isAuthenticated = true
+        setState({ ...state, isAuthenticated: true })
+        localStorage.setItem('isAuthenticated', 'true')
+
+        const collectionInfo = await getCollectionInfo(contract)
+        setState({ ...state, collectionInfo })
+
+        const myNftIDs = await getMyNftIDs()
+        setState({ ...state, myNftIDs })
+
+        const nfts = await getNfts()
+        setState({ ...state, nfts })
       }
-    }
-
-    /** Check if collection is Nestable */
-    setupCollectionType()
-
-    await ethereum.request({
-      method: 'eth_requestAccounts'
-    })
-
-    setupAddress()
-
-    try {
-      await setupCollectionInfo()
     } catch (e) {
-      console.error(e)
-      toast('Provided NFT collection address is invalid! Please check NFT address and Chain ID.', {
-        type: 'error'
-      })
-      setLoading(false)
-      return
-    }
-
-    setupMyNFTs()
-
-    await loadAllNFTs()
-
-    setTimeout(() => {
-      setLoading(false)
-    }, 300)
-  }
-
-  async function getCollectionInfo () {
-    const contract = setupContract()
-    return {
-      name: await contract.name(),
-      address: contract.address,
-      symbol: await contract.symbol(),
-      maxSupply: await contract.maxSupply(),
-      totalSupply: await contract.totalSupply(),
-      soulbound: await contract.isSoulbound(),
-      revokable: await contract.isRevokable(),
-      drop: await contract.isDrop(),
-      dropStart: await contract.dropStart(),
-      reserve: await contract.reserve(),
-      price: await contract.pricePerMint(),
-      royaltiesFees: await contract.getRoyaltyPercentage(),
-      royaltiesAddress: await contract.getRoyaltyRecipient()
-    }
-  }
-
-  async function loadAllNFTs () {
-    setLoadingNfts(true)
-    setFilterByAddress(false)
-
-    const collectionInfo = await setupCollectionInfo()
-    if (collectionInfo) {
-      await fetchNFTs(collectionInfo.totalSupply)
-    }
-    setLoadingNfts(false)
-  }
-
-  async function loadMyNFTs () {
-    setLoadingMyNfts(true)
-    setFilterByAddress(true)
-
-    const address = setupAddress()
-    const contract = setupContract()
-    const balance = await contract.balanceOf(address)
-
-    await fetchNFTs(balance, address)
-    setLoadingMyNfts(false)
-  }
-
-  async function fetchNFTs (balance, address = null) {
-    clearNfts()
-    if (balance.toBigInt() === 0) {
-      return
-    }
-    const contract = setupContract()
-
-    for (let i = 0; i < balance.toBigInt(); i++) {
-      try {
-        const id = address
-          ? await contract.tokenOfOwnerByIndex(address, i)
-          : await contract.tokenByIndex(i)
-        const url = await contract.tokenURI(id.toBigInt())
-        const metadata = await fetch(url).then((response) => {
-          return response.json()
-        })
-        nfts.push({ id: id.toNumber(), ...metadata })
-      } catch (e) {
-        console.error(e)
-
-        toast('Apologies, we were unable to load NFTs metadata.', {
-          type: 'error'
-        })
-      }
-    }
-  }
-
-  function clearNfts () {
-    while (nfts && nfts.length > 0) {
-      nfts.pop()
+      console.debug(e)
     }
   }
 
@@ -228,38 +87,44 @@ export default function Main () {
     <div>
       <div className="box collection br text-center">
         {/* Collection loaded */}
-        {collectionInfo && (
-          <CollectionInfo
-            collection={collectionInfo}
-            provider={provider}
-            address={address}
-          />
-        )}
+        <CollectionInfo nftId={0} />
 
         <div className="btn-connect-wrapper">
-          <Btn loading={loading} id="btnConnect" onClick={() => connectWallet()}>
-            {address
-              ? (
-              <span className='address'>
-                <IconWallet /> {address.slice(0, 11)}
-              </span>
-                )
-              : (
-                  'Connect wallet'
-                )}
-          </Btn>
+          <WalletConnect connect={connectWallet} />
         </div>
       </div>
 
       {/* Wallet connected */}
-      {address && collectionInfo && (
-        <div id="actions">
+      {state.collectionInfo?.name && state.isNestable && (
+        <div id="nestableInfo" className="max-w-lg mx-auto my-12">
+          <h3>
+            The collection you are viewing supports nesting NFTs you own. To setup the nested relationship between NFTs,
+            you first have to own them.
+          </h3>
+          <strong>Instructions:</strong>
+          <ol>
+            <li>Mint one or multiple NFTs</li>
+            <li>Once minted, click on “My NFTs”</li>
+            <li>The NFTs you own will be displayed</li>
+            <li>Click on the NFT you want to set as a parent</li>
+            <li>A window will open, allowing you to link child NFTs to that NFT</li>
+          </ol>
+        </div>
+      )}
+
+      {/* Wallet connected */}
+      {state.walletAddress && state.collectionInfo?.name && (
+        <div id="actions relative">
           <h2 className="text-center">Show NFTs:</h2>
-          <div className="actions">
-            <Btn loading={loadingNfts} onClick={() => loadAllNFTs()}>
-              {'All nfts'}
+          <div className="actions relative">
+            <Btn
+              loading={state.loadingNfts && !state.filterByWallet}
+              disabled={false}
+              onClick={() => filterNfts(false)}
+            >
+              All nfts
             </Btn>
-            <Btn loading={loadingMyNfts} onClick={() => loadMyNFTs()}>
+            <Btn loading={state.loadingNfts && state.filterByWallet} disabled={false} onClick={() => filterNfts(true)}>
               My nfts
             </Btn>
           </div>
@@ -267,17 +132,17 @@ export default function Main () {
       )}
 
       {/* Collection loaded */}
-      {collectionInfo && (
+      {state.collectionInfo && (
         <div>
           {(() => {
-            if (collectionInfo.totalSupply === 0) {
+            if (Number(state.collectionInfo.totalSupply) === 0) {
               return <h2 className="text-center">No NFTs, they must be minted first.</h2>
-            } else if (filterByAddress && !nfts) {
+            } else if (state.filterByWallet && !state.nfts) {
               return <h2 className="text-center">You don`t have any NFTs</h2>
-            } else if (!nfts) {
+            } else if (!state.nfts) {
               return <h2 className="text-center">No NFTs, they must be minted first.</h2>
             } else {
-              return <NftGallery address={address} nfts={nfts} isCollectionNestable={collectionNestable} myNFTs={myNFTs} />
+              return <NftGallery />
             }
           })()}
         </div>

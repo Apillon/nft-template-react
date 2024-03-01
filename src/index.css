@@ -1,9 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .clip-path-tag {
+    clip-path: polygon(0 0, 100% 0%, 85% 100%, 0% 100%);
+  }
+  .clip-path-child {
+    clip-path: polygon(0 0, 100% 0%, 100% 100%, 15% 100%);
+  }
+}
+
 * {
   box-sizing: border-box;
 }
 body {
   background: #f0f2da;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 12px;
@@ -37,11 +50,6 @@ body.lock {
   display: inline-flex;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  grid-gap: 32px;
-}
 .box {
   display: flex;
   flex-direction: column;
@@ -111,6 +119,16 @@ body.lock {
 .mintNestable input {
   width: 100%;
 }
+input[type='radio'] {
+  @apply top-2 right-2 z-1;
+
+  &:checked + label .nft {
+    box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.35);
+  }
+  + label {
+    @apply cursor-pointer;
+  }
+}
 .nestable .actions {
   gap: 0.5rem 1rem;
   margin-bottom: 0;
@@ -132,8 +150,8 @@ body.lock {
   align-items: end;
   margin: 0 auto 2rem;
 }
-.child-pending {
-  margin: 0 0 1rem;
+.pending-child {
+  @apply relative h-6 py-[2px] pr-2 pl-4 mb-1 cursor-pointer font-bold bg-blue clip-path-child;
 }
 .children {
   display: flex;
@@ -247,19 +265,7 @@ button .address {
 }
 
 .nft {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: #ffffff;
-  overflow: hidden;
-  border-radius: 12px;
-}
-.nft_content {
-  padding: 16px 24px 24px;
-}
-.nft_img {
-  height: 100%;
-  object-fit: contain;
+  @apply flex flex-col bg-white overflow-hidden rounded-xl;
 }
 .nuxt-icon.icon-auto svg {
   width: auto;
@@ -276,7 +282,6 @@ button .address {
   justify-content: center;
   transform: translate(-50%, -50%);
   z-index: 10;
-
 }
 .ReactModal__Overlay {
   position: absolute;
@@ -285,12 +290,7 @@ button .address {
   height: 100%;
 }
 .modal-container {
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow: auto;
-  background: #fff;
-  position: relative;
-  padding: 2rem;
+  @apply w-screen h-screen overflow-auto  p-8;
 }
 .modal-close {
   position: absolute;

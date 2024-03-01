@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify'
 
-export function transactionError (msg, error) {
+export function transactionError (msg:string, error: any) {
   if (error) {
     const errorMsg = (typeof error === 'string')
       ? error

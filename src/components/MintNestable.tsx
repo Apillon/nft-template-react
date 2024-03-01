@@ -1,50 +1,50 @@
 import { BigNumber } from 'ethers'
-import React, { useState } from 'react'
+import { BaseSyntheticEvent, useState } from 'react'
 import { toast } from 'react-toastify'
-import { transactionError } from '../utils/errors'
-import { getContract, isTokenNestable } from '../lib/utils'
-import Spinner from './Spinner'
+
+import useWeb3Provider from '../hooks/useWeb3Provider'
+import { CONTRACT_ADDRESS } from '../lib/config'
+import { transactionError } from '../lib/utils/errors'
+import { checkInputAddress, getContract, isCollectionNestable } from '../lib/utils'
 import Btn from './Btn'
 
-export default function MintNestable ({ price, provider, address }) {
-  const [loadingMint, setLoadingMint] = useState(false)
-  const [loadingNestMint, setLoadingMintNestable] = useState(false)
-  const [inputAddress, setInputAddress] = useState('')
-  const amount = 1
+interface MintNestableProps {
+  nftId: number
+}
 
-  async function mintWrapper () {
-    setLoadingMint(true)
+export default function MintNestable({ nftId }: MintNestableProps) {
+  const { state, getSigner } = useWeb3Provider()
 
-    mint(import.meta.env.VITE_CONTRACT_ADDRESS)
+  const [loading, setLoading] = useState(false)
+  const [address, setAddress] = useState('')
+  const [amount, setAmount] = useState(1)
 
-    setLoadingMint(false)
+  async function mintWrapper() {
+    setLoading(true)
+    if (nftId > 0) {
+      childNestMint(address || CONTRACT_ADDRESS, amount)
+    } else {
+      mint(address || CONTRACT_ADDRESS, amount)
+    }
+    setLoading(false)
   }
 
-  async function childMintWrapper () {
-    setLoadingMintNestable(true)
-    const contractAddress = inputAddress || import.meta.env.VITE_CONTRACT_ADDRESS
-
-    mint(contractAddress)
-
-    setLoadingMintNestable(false)
-  }
-
-  async function mint (contractAddress) {
+  async function mint(contractAddress: string, quantity: number) {
     const nftContract = getContract(contractAddress)
-    const isNestable = await isTokenNestable(nftContract)
+    const isNestable = await isCollectionNestable(nftContract)
     if (!isNestable) {
       toast('Token could not be minted! Collection is not nestable.', { type: 'error' })
     } else {
-      const value = price.mul(BigNumber.from(amount))
+      const value = state.collectionInfo?.price.mul(BigNumber.from(quantity))
 
       try {
         const gasLimit = await nftContract
-          .connect(provider.getSigner())
-          .estimateGas.mint(address, amount, { value })
+          .connect(await getSigner())
+          .estimateGas.mint(state.walletAddress, quantity, { value })
 
         await nftContract
-          .connect(provider.getSigner())
-          .mint(address, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
+          .connect(await getSigner())
+          .mint(state.walletAddress, quantity, { value, gasLimit: gasLimit.mul(11).div(10) })
       } catch (e) {
         transactionError('Unsuccessful mint', e)
         console.error(e)
@@ -52,30 +52,63 @@ export default function MintNestable ({ price, provider, address }) {
     }
   }
 
-  const handleChange = (event) => {
-    setInputAddress(event.target.value)
+  async function childNestMint(contractAddress: string, quantity: number) {
+    if (!checkInputAddress(contractAddress)) {
+      console.log('Missing input data')
+      return
+    }
+    const childNftContract = getContract(contractAddress)
+    const isNestable = await isCollectionNestable(childNftContract)
+
+    if (!isNestable) {
+      toast('Token could not be minted! Collection is not nestable.', { type: 'error' })
+    } else {
+      const nftContract = getContract()
+      const price = await childNftContract.pricePerMint()
+      const value = price.mul(BigNumber.from(quantity))
+
+      try {
+        const gasLimit = await childNftContract
+          .connect(await getSigner())
+          .estimateGas.nestMint(nftContract.address, quantity, nftId, { value })
+
+        await childNftContract
+          .connect(await getSigner())
+          .nestMint(nftContract.address, quantity, nftId, { value, gasLimit: gasLimit.mul(11).div(10) })
+
+        toast('Token is being minted', { type: 'success' })
+      } catch (e) {
+        console.log(e)
+        transactionError('Token could not be minted! Check contract address.', e)
+      }
+    }
+  }
+
+  const handleAmountChange = (event: BaseSyntheticEvent) => {
+    setAmount(Number(event.target?.value))
+  }
+
+  const handleAddressChange = (event: BaseSyntheticEvent) => {
+    setAddress(event.target?.value)
   }
 
   return (
     <div className="mintNestable">
       <div>
-        <strong>Mint this collection</strong>
-        <Btn loading={loadingMint} disabled={loadingMint} onClick={mintWrapper}>
-          {loadingMint ? 'Loading...' : 'Mint'}
+        <div className="field amount">
+          <label htmlFor="amount">Number of tokens (1-5):</label>
+          <input type="number" min="1" max="5" value={amount} onChange={(e) => handleAmountChange(e)} />
+        </div>
+        {nftId === 0 && (
+          <div className="field">
+            <label htmlFor="address">Child Contract Address:</label>
+            <input id="address" type="text" value={address} onChange={(e) => handleAddressChange(e)} />
+          </div>
+        )}
+        <Btn loading={loading} disabled={false} onClick={() => mintWrapper()}>
+          Mint Child
         </Btn>
       </div>
-      <br />
-      <div>
-        <strong>Or mint another nestable collection</strong>
-      </div>
-      <br />
-      <div className="field">
-        <label htmlFor="address">Child Contract Address:</label>
-        <input id="address" value={inputAddress} type="text" onChange={handleChange} />
-      </div>
-      <button disabled={loadingNestMint} onClick={childMintWrapper}>
-        {loadingNestMint ? <Spinner/> : 'Mint'}
-      </button>
     </div>
   )
 }

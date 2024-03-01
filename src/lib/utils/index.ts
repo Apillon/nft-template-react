@@ -1,8 +1,8 @@
 import { ethers } from 'ethers'
-import nftAbi from './nftAbi'
+import nftAbi from '../nftAbi'
 import { toast } from 'react-toastify'
 
-function browserName () {
+function browserName() {
   const userAgent = navigator.userAgent
   let browserName = ''
 
@@ -23,10 +23,8 @@ function browserName () {
   }
   return browserName
 }
-function browserSupportsMetaMask () {
-  return ['chrome', 'firefox', 'brave', 'edge', 'opera'].includes(
-    browserName()
-  )
+function browserSupportsMetaMask() {
+  return ['chrome', 'firefox', 'brave', 'edge', 'opera'].includes(browserName())
 }
 export const metamaskNotSupportedMessage = () => {
   return browserSupportsMetaMask()
@@ -100,7 +98,7 @@ export const getCurrentChain = async () => {
   const { ethereum } = window
   return await ethereum.request({ method: 'eth_chainId' })
 }
-export const switchChain = async (chainId: string) => {
+export const changeChain = async (chainId: string) => {
   const { ethereum } = window
   await ethereum.request({
     method: 'wallet_switchEthereumChain',
@@ -108,21 +106,21 @@ export const switchChain = async (chainId: string) => {
   })
 }
 
-export function checkInputAddress (address: string) {
+export function checkInputAddress(address: string) {
   if (!address) {
     toast('Enter contract address!', { type: 'warning' })
     return false
   }
   return true
 }
-export function checkInputAmount (amount: number) {
+export function checkInputAmount(amount: number) {
   if (amount && Number(amount) > 0 && Number(amount) <= 5) {
     return true
   }
   toast('Enter valid amount (number from 1 to 5)!', { type: 'warning' })
   return false
 }
-export function checkInputToken (token: string) {
+export function checkInputToken(token: string | number) {
   if (token && Number(token) >= 0) {
     return true
   }
@@ -130,17 +128,17 @@ export function checkInputToken (token: string) {
   return false
 }
 
-export const getProvider = () => {
+export const initProvider = () => {
   const { ethereum } = window
   return new ethers.providers.Web3Provider(ethereum)
 }
 
 export const getContract = (contractAddress?: string) => {
-  const NFT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS
-  return new ethers.Contract(contractAddress || NFT_ADDRESS, nftAbi, getProvider())
+  const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS
+  return new ethers.Contract(contractAddress || CONTRACT_ADDRESS, nftAbi, initProvider())
 }
 
-export async function isTokenNestable (contract: Contract) {
+export async function isCollectionNestable(contract: Contract) {
   try {
     return await contract.supportsInterface('0x42b0e56f')
   } catch (e) {
@@ -149,7 +147,7 @@ export async function isTokenNestable (contract: Contract) {
   }
 }
 
-export async function getMyNftIDs (contract: Contract, walletAddress: string) {
+export async function fetchMyNftIDs(contract: Contract, walletAddress: string): Promise<Array<number>> {
   const nftIDs = []
   try {
     const balance = await contract.balanceOf(walletAddress)
@@ -160,6 +158,9 @@ export async function getMyNftIDs (contract: Contract, walletAddress: string) {
     }
   } catch (error) {
     console.log(error)
+    toast('Token could not be minted! Wrong address or all tokens has already been minted.', {
+      type: 'error'
+    })
   }
   return nftIDs
 }

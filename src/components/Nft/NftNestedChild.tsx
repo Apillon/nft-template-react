@@ -1,13 +1,21 @@
 import { BigNumber } from 'ethers'
-import React, { useEffect, useState } from 'react'
-import { getContract, getProvider } from '../lib/utils'
-import Spinner from './Spinner'
-import Btn from './Btn'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
-import { transactionError } from '../utils/errors'
+import { transactionError } from '../../lib/utils/errors'
+import Spinner from '../Spinner'
+import Btn from '../Btn'
+import useWeb3Provider from '../../hooks/useWeb3Provider'
 
-const NftNestedChild = ({ parentId, tokenId, contractAddress }) => {
-  const [metadata, setMetadata] = useState({})
+interface NftNestedChildProps {
+  parentId: number
+  tokenId: number
+  contractAddress: string
+}
+
+const NftNestedChild = ({ parentId, tokenId, contractAddress }: NftNestedChildProps) => {
+  const { state, getContract, getSigner } = useWeb3Provider()
+
+  const [metadata, setMetadata] = useState({} as Nft)
   const [loading, setLoading] = useState(true)
   const [loadingTransfer, setLoadingTransfer] = useState(false)
 
@@ -40,25 +48,14 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }) => {
     fetchData()
   }, [parentId, tokenId, contractAddress])
 
-  const transferChildWrapper = async (contractAddress, childId) => {
+  const transferChildWrapper = async (contractAddress: string, childId: number) => {
     setLoadingTransfer(true)
 
     try {
       const nftContract = getContract()
-      const provider = getProvider()
-      const walletAddress = await provider.getSigner().getAddress()
       await nftContract
-        .connect(getProvider().getSigner())
-        .transferChild(
-          parentId,
-          walletAddress,
-          0,
-          0,
-          contractAddress,
-          childId,
-          false,
-          '0x'
-        )
+        .connect(await getSigner())
+        .transferChild(parentId, state.walletAddress, 0, 0, contractAddress, childId, false, '0x')
       toast('Child is being transferred', { type: 'success' })
     } catch (e) {
       console.log(e)
@@ -70,34 +67,33 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }) => {
 
   return (
     <div>
-      {loading
-        ? (
+      {loading ? (
         <div className="relative">
           <Spinner />
         </div>
-          )
-        : (
-            metadata &&
+      ) : (
+        metadata &&
         metadata.name && (
           <div className="box">
             <img src={metadata.image} alt={metadata.name} />
             <div className="box-content">
-              <h3>#{metadata.id} {metadata.name}</h3>
+              <h3>
+                #{metadata.id} {metadata.name}
+              </h3>
               <p>{metadata.description}</p>
               <div className="btn-group">
                 <Btn
                   loading={loadingTransfer}
-                  onClick={() =>
-                    transferChildWrapper(contractAddress, tokenId)
-                  }
+                  disabled={false}
+                  onClick={() => transferChildWrapper(contractAddress, tokenId)}
                 >
                   Transfer Token to wallet
                 </Btn>
               </div>
             </div>
           </div>
-            )
-          )}
+        )
+      )}
     </div>
   )
 }

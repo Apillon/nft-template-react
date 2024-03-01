@@ -1,34 +1,41 @@
 import { BigNumber } from 'ethers'
-import React, { useRef, useState } from 'react'
+import { BaseSyntheticEvent, useState } from 'react'
 import Spinner from './Spinner'
-import { transactionError } from '../utils/errors'
+import { transactionError } from '../lib/utils/errors'
 import { checkInputAmount, getContract } from '../lib/utils'
 import { toast } from 'react-toastify'
+import useWeb3Provider from '../hooks/useWeb3Provider'
+import { CONTRACT_ADDRESS } from '../lib/config'
 
-export default function Mint ({ price, provider, address }) {
+export default function Mint() {
+  const { state } = useWeb3Provider()
+
   const [loading, setLoading] = useState(false)
   const [amount, setAmount] = useState(1)
-  const inputRef = useRef()
 
-  async function mint () {
+  async function mint() {
     setLoading(true)
-    const NFT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS
 
     if (!checkInputAmount(amount)) {
+      toast('Enter amount (1-5)', { type: 'warning' })
       console.log('Wrong amount number')
+      return
+    } else if (!state.signer) {
+      console.debug('Missing signer')
+      return
+    } else if (!state.collectionInfo) {
+      console.debug('Missing collection data')
       return
     }
     try {
-      const nftContract = getContract(NFT_ADDRESS)
-      const value = price.mul(BigNumber.from(amount))
+      const nftContract = getContract(CONTRACT_ADDRESS)
+      const value = state.collectionInfo.price.mul(BigNumber.from(amount))
 
-      const gasLimit = await nftContract
-        .connect(provider.getSigner())
-        .estimateGas.mint(address, amount, { value })
+      const gasLimit = await nftContract.connect(state.signer).estimateGas.mint(state.walletAddress, amount, { value })
 
       await nftContract
-        .connect(provider.getSigner())
-        .mint(address, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
+        .connect(state.signer)
+        .mint(state.walletAddress, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
 
       toast('Token is being minted', { type: 'success' })
     } catch (e) {
@@ -41,7 +48,7 @@ export default function Mint ({ price, provider, address }) {
     }, 300)
   }
 
-  const handleChange = (event) => {
+  const handleChange = (event: BaseSyntheticEvent) => {
     setAmount(event.target.value)
   }
 
@@ -49,16 +56,9 @@ export default function Mint ({ price, provider, address }) {
     <div className="mint">
       <div className="amount">
         <label htmlFor="amount">Number of tokens (1-5):</label>
-        <input
-          ref={inputRef}
-          type="number"
-          min="1"
-          max="5"
-          value={amount}
-          onChange={handleChange}
-        />
+        <input type="number" min="1" max="5" value={amount} onChange={() => handleChange} />
       </div>
-      <button className="btn-mint" id="btnMint" onClick={mint}>
+      <button className="btn-mint" id="btnMint" onClick={() => mint}>
         {loading ? <Spinner /> : 'Mint'}
       </button>
     </div>
