@@ -14,6 +14,7 @@ import {
 } from '../lib/utils'
 import { CHAIN_ID, CONTRACT_ADDRESS } from '../lib/config'
 import { ethers } from 'ethers'
+import { useEffect } from 'react'
 
 export default function Main() {
   const { state, setState, filterNfts, initContract, getCollectionInfo, getMyNftIDs, getNfts } = useWeb3Provider()
@@ -82,6 +83,16 @@ export default function Main() {
       console.debug(e)
     }
   }
+
+  useEffect(() => {
+    setState(state)
+  }, [state.collectionInfo?.totalSupply])
+  useEffect(() => {
+    setState(state)
+  }, [state.nfts])
+  useEffect(() => {
+    setState(state)
+  }, [state])
 
   return (
     <div>

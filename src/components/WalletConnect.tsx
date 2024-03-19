@@ -15,10 +15,7 @@ export default function WalletConnect({ connect }: WalletConnectProps) {
 
   const connectWallet = async () => {
     setLoading(true)
-
     await connect()
-    console.log(state)
-
     setLoading(false)
   }
 

@@ -9,9 +9,6 @@ export default function WalletConnect() {
   const { connectors, connect, isPending } = useConnect()
   const { disconnect } = useDisconnect()
 
-  // console.log(import.meta.env)
-  // console.log(connectors)
-
   const connector = connectors.find((item) => item.type === 'metaMask')
 
   return (

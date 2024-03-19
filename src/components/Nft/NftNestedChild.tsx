@@ -13,7 +13,7 @@ interface NftNestedChildProps {
 }
 
 const NftNestedChild = ({ parentId, tokenId, contractAddress }: NftNestedChildProps) => {
-  const { state, getContract, getSigner } = useWeb3Provider()
+  const { state, getContract, getSigner, refreshNfts } = useWeb3Provider()
 
   const [metadata, setMetadata] = useState({} as Nft)
   const [loading, setLoading] = useState(true)
@@ -53,10 +53,13 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }: NftNestedChildPr
 
     try {
       const nftContract = getContract()
-      await nftContract
+      const tx = await nftContract
         .connect(await getSigner())
         .transferChild(parentId, state.walletAddress, 0, 0, contractAddress, childId, false, '0x')
       toast('Child is being transferred', { type: 'success' })
+
+      await tx.wait()
+      await refreshNfts(nftContract)
     } catch (e) {
       console.log(e)
       transactionError('Token could not be transferred!', e)

@@ -7,6 +7,7 @@ import MainLayout from './layout/MainLayout'
 import Web3ContextProvider from './context/Web3Context'
 
 import './index.css'
+import 'react-tooltip/dist/react-tooltip.css'
 
 globalThis.Buffer = Buffer
 

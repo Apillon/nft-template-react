@@ -12,7 +12,7 @@ interface Child {
 }
 
 const NftPendingChildren = ({ nftId }: { nftId: number }) => {
-  const { getContract, getSigner } = useWeb3Provider()
+  const { getContract, getSigner, refreshNfts } = useWeb3Provider()
 
   const [pendingChildren, setPendingChildren] = useState<Child[]>([])
   const [loading, setLoading] = useState(false)
@@ -47,8 +47,12 @@ const NftPendingChildren = ({ nftId }: { nftId: number }) => {
   const acceptChild = async (id: number, index: number, childAddress: string, childId: number) => {
     try {
       const nftContract = getContract()
-      await nftContract.connect(await getSigner()).acceptChild(id, index, childAddress, childId)
+      const tx = await nftContract.connect(await getSigner()).acceptChild(id, index, childAddress, childId)
+
       toast('Token is being accepted', { type: 'success' })
+
+      await tx.wait()
+      await refreshNfts(nftContract)
     } catch (e) {
       console.log(e)
       transactionError('Token could not be accepted!', e)
@@ -64,8 +68,12 @@ const NftPendingChildren = ({ nftId }: { nftId: number }) => {
   const rejectAllChildren = async (parentId: number, pendingChildrenNum = 1) => {
     try {
       const nftContract = getContract()
-      await nftContract.connect(await getSigner()).rejectAllChildren(parentId, pendingChildrenNum)
+      const tx = await nftContract.connect(await getSigner()).rejectAllChildren(parentId, pendingChildrenNum)
+
       toast('Tokens is being rejected', { type: 'success' })
+
+      await tx.wait()
+      await refreshNfts(nftContract)
     } catch (e) {
       console.log(e)
       transactionError('Tokens could not be rejected!', e)
@@ -73,26 +81,32 @@ const NftPendingChildren = ({ nftId }: { nftId: number }) => {
   }
 
   return (
-    <div>
-      {pendingChildren.map((child, key) => (
-        <div
-          key={key}
-          className={`pending-child ${key > 0 ? 'opacity-80 pointer-events-none' : ''}`}
-          onClick={() => acceptChildWrapper(child.contractAddress, child.tokenId)}
-        >
-          {loading && key === 0 ? <Spinner /> : <span> Accept Child: {Number(child.tokenId)} </span>}
+    <>
+      {pendingChildren && pendingChildren.length ? (
+        <div>
+          {pendingChildren.map((child, key) => (
+            <div
+              key={key}
+              className={`pending-child ${key > 0 ? 'opacity-80 pointer-events-none' : ''}`}
+              onClick={() => acceptChildWrapper(child.contractAddress, child.tokenId)}
+            >
+              {loading && key === 0 ? <Spinner /> : <span> Accept Child: {Number(child.tokenId)} </span>}
+            </div>
+          ))}
+          <div className="pending-child" onClick={rejectChildrenWrapper}>
+            {loadingReject ? (
+              <Spinner />
+            ) : pendingChildren.length > 1 ? (
+              <span>Reject Children</span>
+            ) : (
+              <span>Reject Child</span>
+            )}
+          </div>
         </div>
-      ))}
-      <div className="pending-child" onClick={rejectChildrenWrapper}>
-        {loadingReject ? (
-          <Spinner />
-        ) : pendingChildren.length > 1 ? (
-          <span>Reject Children</span>
-        ) : (
-          <span>Reject Child</span>
-        )}
-      </div>
-    </div>
+      ) : (
+        <></>
+      )}
+    </>
   )
 }
 

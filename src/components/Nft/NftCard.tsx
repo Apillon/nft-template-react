@@ -5,8 +5,6 @@ import useWeb3Provider from '../../hooks/useWeb3Provider'
 import ScrollLock from '../../lib/utils/scroll-lock'
 import Header from '../Header'
 import NftNestable from './NftNestable'
-import CollectionInfo from '../CollectionInfo'
-import NftNesting from './NftNesting'
 
 interface NftProps {
   nft: Nft

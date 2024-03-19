@@ -13,7 +13,7 @@ interface NftTransferProps {
 
 function NftTransfer({ nftId }: NftTransferProps) {
   const [loading, setLoading] = useState(false)
-  const { state, getContract, getSigner } = useWeb3Provider()
+  const { state, getContract, getSigner, refreshNfts } = useWeb3Provider()
 
   const [address, setAddress] = useState('')
   const [tokenId, setTokenId] = useState(0)
@@ -43,7 +43,7 @@ function NftTransfer({ nftId }: NftTransferProps) {
         type: 'warning'
       })
     } else if (checkInputToken(tokenId) && checkInputAddress(address)) {
-      await nestTransferFrom(CONTRACT_ADDRESS, address, tokenId, nftId, '0x')
+      await nestTransferFrom(address, CONTRACT_ADDRESS, tokenId, nftId, '0x')
     }
 
     setLoading(false)
@@ -61,11 +61,14 @@ function NftTransfer({ nftId }: NftTransferProps) {
       toast('Child token is not nestable', { type: 'error' })
     } else {
       try {
-        await childNftContract
+        const tx = await childNftContract
           .connect(await getSigner())
           .nestTransferFrom(state.walletAddress, toAddress, tokenId, destinationId, data)
 
         toast('Token is being transferred', { type: 'success' })
+
+        await tx.wait()
+        await refreshNfts(childNftContract)
       } catch (e) {
         console.log(e)
         transactionError('Token could not be transferred! Wrong token address or token ID.', e)
@@ -106,19 +109,21 @@ function NftTransfer({ nftId }: NftTransferProps) {
             <a id="contractAddress">
               <img src="images/info.svg" width={16} height={16} />
             </a>
-            <Tooltip anchorSelect="contractAddress" variant="warning">
-              <span>Enter child collection address from where you want to transfer NFT.</span>
-            </Tooltip>
+            <Tooltip
+              anchorSelect="#contractAddress"
+              variant="info"
+              content="Enter child collection address from where you want to transfer NFT"
+            ></Tooltip>
           </label>
           <input id="address" value={address} type="text" onChange={handleChangeAddress} />
         </div>
         <div className="field tokenId">
           <label htmlFor="tokenId">
             Token ID:
-            <a id="tokenId">
+            <a id="tokenIdInfo">
               <img src="images/info.svg" width={16} height={16} />
             </a>
-            <Tooltip anchorSelect="tokenId" variant="warning">
+            <Tooltip anchorSelect="#tokenIdInfo" variant="info">
               <span>With Token ID you choose which token you will transfer.</span>
             </Tooltip>
           </label>

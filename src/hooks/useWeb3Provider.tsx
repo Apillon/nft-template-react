@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers'
+import { BigNumber, Contract, ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { CONTRACT_ADDRESS } from '../lib/config'
@@ -67,11 +67,13 @@ const useWeb3Provider = () => {
 
     if (!Object.keys(state.contracts).includes(address)) {
       const contracts = state.contracts
-      contracts[CONTRACT_ADDRESS] = initContract(address)
+      const newContract = initContract(address, getProvider())
+      contracts[address] = newContract
       setState({
         ...state,
         contracts
       })
+      return newContract
     }
     return state.contracts[address]
   }
@@ -94,6 +96,14 @@ const useWeb3Provider = () => {
     }
     setState(state)
     return state.collectionInfo
+  }
+  async function getCollectionTotalSupply(contract: Contract): Promise<BigNumber> {
+    const totalSupply = await contract.totalSupply()
+    if (state.collectionInfo) {
+      state.collectionInfo.totalSupply = totalSupply
+      setState({ ...state, collectionInfo: { ...state.collectionInfo, totalSupply } })
+    }
+    return totalSupply
   }
 
   async function getMyNftIDs(contractAddress?: string) {
@@ -177,6 +187,16 @@ const useWeb3Provider = () => {
     return null
   }
 
+  async function refreshNfts(contract: Contract) {
+    const total = await getCollectionTotalSupply(contract)
+
+    state.myNftIDs = state.walletAddress ? await fetchMyNftIDs(contract, state.walletAddress) : []
+    setState(state)
+
+    state.nfts = await fetchNFTs(total)
+    setState(state)
+  }
+
   function filterNfts(filter: boolean) {
     state.filterByWallet = filter
     setState(state)
@@ -214,6 +234,7 @@ const useWeb3Provider = () => {
     getNfts,
     getProvider,
     getSigner,
+    refreshNfts,
     resetNft,
     setState,
     state

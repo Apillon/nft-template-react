@@ -13,7 +13,7 @@ interface NftNestingProps {
 }
 
 function NftNesting({ nftId }: NftNestingProps) {
-  const { state, getContract, getSigner } = useWeb3Provider()
+  const { state, getContract, getSigner, refreshNfts } = useWeb3Provider()
 
   const [loading, setLoading] = useState(false)
   const [tokenId, setTokenId] = useState(0)
@@ -23,9 +23,7 @@ function NftNesting({ nftId }: NftNestingProps) {
   }, [state.nfts, state.filterByWallet])
 
   function handleChange(event: BaseSyntheticEvent) {
-    console.log(tokenId, event.target.value)
     setTokenId(Number(event.target.value) || 0)
-    console.log(tokenId, event.target.value)
   }
 
   async function getChildren(parentId: number) {
@@ -79,11 +77,14 @@ function NftNesting({ nftId }: NftNestingProps) {
       toast('Child token is not nestable', { type: 'error' })
     } else {
       try {
-        await childNftContract
+        const tx = await childNftContract
           .connect(await getSigner())
           .nestTransferFrom(state.walletAddress, toAddress, tokenId, destinationId, data)
 
         toast('Token is being transferred', { type: 'success' })
+
+        await tx.wait()
+        await refreshNfts(childNftContract)
       } catch (e) {
         console.log(e)
         transactionError('Token could not be transferred! Wrong token address or token ID.', e)

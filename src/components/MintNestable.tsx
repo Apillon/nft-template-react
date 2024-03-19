@@ -13,7 +13,7 @@ interface MintNestableProps {
 }
 
 export default function MintNestable({ nftId }: MintNestableProps) {
-  const { state, getSigner } = useWeb3Provider()
+  const { state, getSigner, refreshNfts } = useWeb3Provider()
 
   const [loading, setLoading] = useState(false)
   const [address, setAddress] = useState('')
@@ -42,9 +42,14 @@ export default function MintNestable({ nftId }: MintNestableProps) {
           .connect(await getSigner())
           .estimateGas.mint(state.walletAddress, quantity, { value })
 
-        await nftContract
+        const tx = await nftContract
           .connect(await getSigner())
           .mint(state.walletAddress, quantity, { value, gasLimit: gasLimit.mul(11).div(10) })
+
+        toast('Token minting has started', { type: 'success' })
+
+        await tx.wait()
+        await refreshNfts(nftContract)
       } catch (e) {
         transactionError('Unsuccessful mint', e)
         console.error(e)
@@ -72,11 +77,14 @@ export default function MintNestable({ nftId }: MintNestableProps) {
           .connect(await getSigner())
           .estimateGas.nestMint(nftContract.address, quantity, nftId, { value })
 
-        await childNftContract
+        const tx = await childNftContract
           .connect(await getSigner())
           .nestMint(nftContract.address, quantity, nftId, { value, gasLimit: gasLimit.mul(11).div(10) })
 
-        toast('Token is being minted', { type: 'success' })
+        toast('Token minting has started', { type: 'success' })
+
+        await tx.wait()
+        await refreshNfts(childNftContract)
       } catch (e) {
         console.log(e)
         transactionError('Token could not be minted! Check contract address.', e)

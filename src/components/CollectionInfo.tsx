@@ -12,44 +12,39 @@ interface CollectionInfoProps {
 export default function CollectionInfo({ nftId }: CollectionInfoProps) {
   const { state } = useWeb3Provider()
 
-  const [totalSupply] = useState(state.collectionInfo?.totalSupply || 0)
-  const [maxSupply] = useState(state.collectionInfo?.maxSupply || 0)
-  const [dropStartDate, setDropStartDate] = useState(new Date())
+  const [totalSupply, setTotalSupply] = useState(0)
+  const [maxSupply, setMaySupply] = useState(0)
   const [dropStartTimestamp, setDropStartTimestamp] = useState(0)
+  const [dropStartDate, setDropStartDate] = useState(new Date())
   const [days, setDays] = useState(0)
   const [hours, setHours] = useState(0)
   const [minutes, setMinutes] = useState(0)
   const [seconds, setSeconds] = useState(0)
 
-  const setupDropStartTimestamp = () => {
-    if (dropStartTimestamp) return dropStartTimestamp
-
-    const newTimestamp = state.collectionInfo.dropStart.toNumber() * 1000
-    setDropStartTimestamp(newTimestamp)
-
-    return newTimestamp
-  }
-
   useEffect(() => {
     if (state.collectionInfo?.address) {
       loadInfo()
     }
-  }, [state])
+  }, [state.collectionInfo])
 
-  function loadInfo() {
+  const loadInfo = () => {
+    const dropStart = (state.collectionInfo?.dropStart.toNumber() || 0) * 1000
+
+    setTotalSupply(state.collectionInfo?.totalSupply.toNumber() || 0)
+    setMaySupply(state.collectionInfo?.maxSupply.toNumber() || 0)
+    setDropStartTimestamp(dropStart)
+    setDropStartDate(new Date(dropStart))
+
     if (state.collectionInfo?.drop) {
-      const dropStartTimestamp = setupDropStartTimestamp()
-      setDropStartDate(new Date(dropStartTimestamp))
-
-      if (dropStartTimestamp > Date.now()) {
+      if (dropStart > Date.now()) {
         // The data/time we want to countdown to
-        countdown(dropStartTimestamp)
+        countdown(dropStart)
 
         // Run myFunc every second
         const myFunc = setInterval(() => {
-          countdown(dropStartTimestamp)
+          countdown(dropStart)
           // Display the message when countdown is over
-          const timeLeft = dropStartTimestamp - new Date().getTime()
+          const timeLeft = dropStart - new Date().getTime()
           if (timeLeft < 0) {
             clearInterval(myFunc)
           }

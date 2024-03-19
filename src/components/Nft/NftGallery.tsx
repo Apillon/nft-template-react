@@ -1,14 +1,24 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import useWeb3Provider from '../../hooks/useWeb3Provider'
 import NftCard from './NftCard'
 import Spinner from '../Spinner'
 
 export default function NftGallery() {
-  const { state } = useWeb3Provider()
+  const { state, setState } = useWeb3Provider()
 
   const nfts = useMemo(() => {
     return state.filterByWallet ? state.nfts.filter((item) => state.myNftIDs.includes(item.id)) : state.nfts
-  }, [state.nfts, state.filterByWallet])
+  }, [state.nfts, state.filterByWallet, state.collectionInfo?.totalSupply])
+
+  useEffect(() => {
+    setState(state)
+  }, [state.collectionInfo?.totalSupply])
+  useEffect(() => {
+    setState(state)
+  }, [state.nfts])
+  useEffect(() => {
+    setState(state)
+  }, [state])
 
   return (
     <div className="relative">

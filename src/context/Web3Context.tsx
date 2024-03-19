@@ -12,6 +12,7 @@ export interface IWeb3Context {
   getNfts: () => Promise<Nft[]>
   getProvider: () => Provider
   getSigner: () => Promise<Signer>
+  refreshNfts: () => void
   resetNft: () => void
   setState: (s: IWeb3State) => void
   state: IWeb3State
@@ -35,6 +36,7 @@ const Web3ContextProvider: FC<Props> = ({ children }) => {
     getNfts,
     getProvider,
     getSigner,
+    refreshNfts,
     resetNft,
     setState,
     state
@@ -53,6 +55,7 @@ const Web3ContextProvider: FC<Props> = ({ children }) => {
         getNfts,
         getProvider,
         getSigner,
+        refreshNfts,
         resetNft,
         setState,
         state

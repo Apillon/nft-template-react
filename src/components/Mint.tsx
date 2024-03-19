@@ -8,7 +8,7 @@ import useWeb3Provider from '../hooks/useWeb3Provider'
 import { CONTRACT_ADDRESS } from '../lib/config'
 
 export default function Mint() {
-  const { state } = useWeb3Provider()
+  const { state, refreshNfts } = useWeb3Provider()
 
   const [loading, setLoading] = useState(false)
   const [amount, setAmount] = useState(1)
@@ -33,11 +33,14 @@ export default function Mint() {
 
       const gasLimit = await nftContract.connect(state.signer).estimateGas.mint(state.walletAddress, amount, { value })
 
-      await nftContract
+      const tx = await nftContract
         .connect(state.signer)
         .mint(state.walletAddress, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
 
-      toast('Token is being minted', { type: 'success' })
+      toast('Token minting has started', { type: 'success' })
+
+      await tx.wait()
+      await refreshNfts(nftContract)
     } catch (e) {
       transactionError('Unsuccessful mint', e)
       console.error(e)
@@ -58,7 +61,7 @@ export default function Mint() {
         <label htmlFor="amount">Number of tokens (1-5):</label>
         <input type="number" min="1" max="5" value={amount} onChange={() => handleChange} />
       </div>
-      <button className="btn-mint" id="btnMint" onClick={() => mint}>
+      <button className="btn-mint" id="btnMint" onClick={() => mint()}>
         {loading ? <Spinner /> : 'Mint'}
       </button>
     </div>
