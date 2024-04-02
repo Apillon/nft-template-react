@@ -4,11 +4,11 @@ import Spinner from './Spinner'
 import { transactionError } from '../lib/utils/errors'
 import { checkInputAmount, getContract } from '../lib/utils'
 import { toast } from 'react-toastify'
-import useWeb3Provider from '../hooks/useWeb3Provider'
+import { useWeb3Context } from '../context/Web3Context'
 import { CONTRACT_ADDRESS } from '../lib/config'
 
 export default function Mint() {
-  const { state, refreshNfts } = useWeb3Provider()
+  const { state, refreshNfts } = useWeb3Context()
 
   const [loading, setLoading] = useState(false)
   const [amount, setAmount] = useState(1)
@@ -40,6 +40,7 @@ export default function Mint() {
       toast('Token minting has started', { type: 'success' })
 
       await tx.wait()
+
       await refreshNfts(nftContract)
     } catch (e) {
       transactionError('Unsuccessful mint', e)

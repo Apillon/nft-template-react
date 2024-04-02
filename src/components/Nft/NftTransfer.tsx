@@ -1,8 +1,9 @@
 import { BaseSyntheticEvent, useState } from 'react'
-import Btn from '../Btn'
-import useWeb3Provider from '../../hooks/useWeb3Provider'
 import { Tooltip } from 'react-tooltip'
 import { toast } from 'react-toastify'
+
+import { useWeb3Context } from '../../context/Web3Context'
+import Btn from '../Btn'
 import { checkInputAddress, checkInputToken, isCollectionNestable } from '../../lib/utils'
 import { transactionError } from '../../lib/utils/errors'
 import { CONTRACT_ADDRESS } from '../../lib/config'
@@ -13,7 +14,7 @@ interface NftTransferProps {
 
 function NftTransfer({ nftId }: NftTransferProps) {
   const [loading, setLoading] = useState(false)
-  const { state, getContract, getSigner, refreshNfts } = useWeb3Provider()
+  const { state, getChildren, getContract, getPendingChildren, getSigner, refreshNfts } = useWeb3Context()
 
   const [address, setAddress] = useState('')
   const [tokenId, setTokenId] = useState(0)
@@ -31,14 +32,14 @@ function NftTransfer({ nftId }: NftTransferProps) {
   async function nestTransferFromWrapper() {
     setLoading(true)
 
-    const children = await getChildren(tokenId)
-    const pendingChildren = await getPendingChildren(tokenId)
+    await getChildren(tokenId)
+    await getPendingChildren(tokenId)
 
-    if (children.length > 0) {
+    if (state.children.length > 0) {
       toast('This NFT already has children. Please remove his children or use another NFT.', {
         type: 'warning'
       })
-    } else if (pendingChildren.length > 0) {
+    } else if (state.pendingChildren.length > 0) {
       toast('This NFT has pending children. Please reject his pending children or use another NFT.', {
         type: 'warning'
       })
@@ -68,30 +69,14 @@ function NftTransfer({ nftId }: NftTransferProps) {
         toast('Token is being transferred', { type: 'success' })
 
         await tx.wait()
+
+        getChildren(nftId)
+        getPendingChildren(nftId)
         await refreshNfts(childNftContract)
       } catch (e) {
         console.log(e)
         transactionError('Token could not be transferred! Wrong token address or token ID.', e)
       }
-    }
-  }
-
-  async function getChildren(parentId: number) {
-    try {
-      const nftContract = getContract()
-      return await nftContract.connect(await getSigner()).childrenOf(parentId)
-    } catch (e) {
-      console.log(e)
-      return []
-    }
-  }
-  async function getPendingChildren(parentId: number) {
-    try {
-      const nftContract = getContract()
-      return await nftContract.connect(await getSigner()).pendingChildrenOf(parentId)
-    } catch (e) {
-      console.log(e)
-      return []
     }
   }
 

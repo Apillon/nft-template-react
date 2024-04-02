@@ -1,9 +1,12 @@
-import useWeb3Provider from '../hooks/useWeb3Provider'
+import { useEffect } from 'react'
+import { ethers } from 'ethers'
+import { toast } from 'react-toastify'
+
+import { useWeb3Context } from '../context/Web3Context'
 import Btn from './Btn'
 import NftGallery from './Nft/NftGallery'
 import CollectionInfo from './CollectionInfo'
 import WalletConnect from './WalletConnect'
-import { toast } from 'react-toastify'
 import {
   addChain,
   changeChain,
@@ -13,11 +16,9 @@ import {
   metamaskNotSupportedMessage
 } from '../lib/utils'
 import { CHAIN_ID, CONTRACT_ADDRESS } from '../lib/config'
-import { ethers } from 'ethers'
-import { useEffect } from 'react'
 
 export default function Main() {
-  const { state, setState, filterNfts, initContract, getCollectionInfo, getMyNftIDs, getNfts } = useWeb3Provider()
+  const { state, setState, filterNfts, initContract, getCollectionInfo, getMyNftIDs, getNfts } = useWeb3Context()
 
   const connectWallet = async () => {
     if (state.isAuthenticated) return
@@ -143,7 +144,7 @@ export default function Main() {
       )}
 
       {/* Collection loaded */}
-      {state.collectionInfo && (
+      {state.collectionInfo?.address && (
         <div>
           {(() => {
             if (Number(state.collectionInfo.totalSupply) === 0) {

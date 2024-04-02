@@ -1,18 +1,19 @@
 import { useMemo, useState } from 'react'
-import Modal from 'react-modal'
 
-import useWeb3Provider from '../../hooks/useWeb3Provider'
+import { useWeb3Context } from '../../context/Web3Context'
 import ScrollLock from '../../lib/utils/scroll-lock'
 import Header from '../Header'
 import NftNestable from './NftNestable'
 
+// @ts-ignore
+import Modal from 'react-modal'
 interface NftProps {
   nft: Nft
   open?: Boolean
 }
 
 export default function NftCard({ nft, open }: NftProps) {
-  const { state } = useWeb3Provider()
+  const { state } = useWeb3Context()
   const [isModalOpen, setIsOpen] = useState(false)
 
   const isMyNFT = useMemo(() => {

@@ -32,7 +32,7 @@ export const metamaskNotSupportedMessage = () => {
     : 'Your browser does not support MetaMask, please use another browser!'
 }
 
-export const addChain = async (chainId: string) => {
+export const addChain = async (chainId: string | number) => {
   const { ethereum } = window
 
   if (chainId === 0x507) {

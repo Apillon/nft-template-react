@@ -5,35 +5,39 @@ export interface IWeb3Context {
   disconnect: () => void
   filterNfts: (filter: boolean) => void
   initContract: (contractAddress?: string, provider?: Provider) => Contract
+  getChildren: (parentId: number, tokenAddress?: string) => void
   getCollectionInfo: (contract: Contract) => Promise<CollectionInfo>
-  getContract: (address: string) => Contract
+  getContract: (address?: string) => Contract
   getMyNftIDs: (contractAddress?: string) => Promise<Array<number>>
   getNft: (nftId: number) => Nft | undefined
   getNfts: () => Promise<Nft[]>
+  getPendingChildren: (parentId: number, tokenAddress?: string) => void
   getProvider: () => Provider
   getSigner: () => Promise<Signer>
-  refreshNfts: () => void
+  refreshNfts: (contract: Contract) => void
   resetNft: () => void
   setState: (s: IWeb3State) => void
   state: IWeb3State
 }
 
-const Web3Context = createContext<IWeb3Context | null>(null)
+const Web3Context = createContext<IWeb3Context | undefined>(undefined)
 
 type Props = {
   children: ReactNode
 }
 
-const Web3ContextProvider: FC<Props> = ({ children }) => {
+const Web3ContextProvider: FC<Props> = ({ children }: { children: ReactNode }) => {
   const {
     disconnect,
     filterNfts,
     initContract,
+    getChildren,
     getCollectionInfo,
     getContract,
     getMyNftIDs,
     getNft,
     getNfts,
+    getPendingChildren,
     getProvider,
     getSigner,
     refreshNfts,
@@ -48,11 +52,13 @@ const Web3ContextProvider: FC<Props> = ({ children }) => {
         disconnect,
         filterNfts,
         initContract,
+        getChildren,
         getCollectionInfo,
         getContract,
         getMyNftIDs,
         getNft,
         getNfts,
+        getPendingChildren,
         getProvider,
         getSigner,
         refreshNfts,
@@ -66,6 +72,14 @@ const Web3ContextProvider: FC<Props> = ({ children }) => {
   )
 }
 
-export default Web3ContextProvider
+export const useWeb3Context = () => {
+  const context = useContext(Web3Context)
 
-export const useWeb3Context = () => useContext(Web3Context)
+  if (context === undefined) {
+    throw new Error('useWeb3Context usage must be wrapped with GlobalContext provider.')
+  }
+
+  return context
+}
+
+export default Web3ContextProvider

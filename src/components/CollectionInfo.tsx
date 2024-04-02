@@ -2,7 +2,7 @@ import { constants, ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 import Mint from './Mint'
 import { CHAIN_ID } from '../lib/config'
-import useWeb3Provider from '../hooks/useWeb3Provider'
+import { useWeb3Context } from '../context/Web3Context'
 import MintNestable from './MintNestable'
 
 interface CollectionInfoProps {
@@ -10,7 +10,7 @@ interface CollectionInfoProps {
 }
 
 export default function CollectionInfo({ nftId }: CollectionInfoProps) {
-  const { state } = useWeb3Provider()
+  const { state } = useWeb3Context()
 
   const [totalSupply, setTotalSupply] = useState(0)
   const [maxSupply, setMaySupply] = useState(0)
@@ -67,11 +67,11 @@ export default function CollectionInfo({ nftId }: CollectionInfoProps) {
   function collectionLink() {
     switch (CHAIN_ID) {
       case '0x504':
-        return `https://moonbeam.moonscan.io/address/${state.collectionInfo.address}`
+        return `https://moonbeam.moonscan.io/address/${state.collectionInfo?.address}`
       case '0x507':
-        return `https://moonbase.moonscan.io/address/${state.collectionInfo.address}`
+        return `https://moonbase.moonscan.io/address/${state.collectionInfo?.address}`
       case '0x250':
-        return `https://astar.subscan.io/address/${state.collectionInfo.address}`
+        return `https://astar.subscan.io/address/${state.collectionInfo?.address}`
       default:
         console.warn('Missing chainId')
         return 'https://moonbeam.moonscan.io'

@@ -2,41 +2,19 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { BigNumber } from 'ethers'
 
-import useWeb3Provider from '../../hooks/useWeb3Provider'
+import { useWeb3Context } from '../../context/Web3Context'
 import { transactionError } from '../../lib/utils/errors'
 import Spinner from '../Spinner'
 
-interface Child {
-  contractAddress: string
-  tokenId: BigNumber
-}
-
 const NftPendingChildren = ({ nftId }: { nftId: number }) => {
-  const { getContract, getSigner, refreshNfts } = useWeb3Provider()
+  const { state, getChildren, getContract, getPendingChildren, getSigner, refreshNfts } = useWeb3Context()
 
-  const [pendingChildren, setPendingChildren] = useState<Child[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingReject, setLoadingReject] = useState(false)
 
   useEffect(() => {
-    async function fetchData() {
-      if (nftId) {
-        const pendingChildren = await getPendingChildren(nftId)
-        setPendingChildren(pendingChildren)
-      }
-    }
-    fetchData()
-  }, [nftId])
-
-  async function getPendingChildren(parentId: number) {
-    try {
-      const nftContract = getContract()
-      return await nftContract.connect(await getSigner()).pendingChildrenOf(parentId)
-    } catch (e) {
-      console.log(e)
-      return []
-    }
-  }
+    getPendingChildren(nftId)
+  }, [state, nftId])
 
   async function acceptChildWrapper(childAddress: string, childId: BigNumber) {
     setLoading(true)
@@ -52,7 +30,10 @@ const NftPendingChildren = ({ nftId }: { nftId: number }) => {
       toast('Token is being accepted', { type: 'success' })
 
       await tx.wait()
+
       await refreshNfts(nftContract)
+      getChildren(nftId)
+      getPendingChildren(nftId)
     } catch (e) {
       console.log(e)
       transactionError('Token could not be accepted!', e)
@@ -61,7 +42,7 @@ const NftPendingChildren = ({ nftId }: { nftId: number }) => {
 
   async function rejectChildrenWrapper() {
     setLoadingReject(true)
-    await rejectAllChildren(nftId, pendingChildren.length)
+    await rejectAllChildren(nftId, state.pendingChildren.length)
     setLoadingReject(false)
   }
 
@@ -73,7 +54,9 @@ const NftPendingChildren = ({ nftId }: { nftId: number }) => {
       toast('Tokens is being rejected', { type: 'success' })
 
       await tx.wait()
+
       await refreshNfts(nftContract)
+      getPendingChildren(nftId)
     } catch (e) {
       console.log(e)
       transactionError('Tokens could not be rejected!', e)
@@ -82,9 +65,9 @@ const NftPendingChildren = ({ nftId }: { nftId: number }) => {
 
   return (
     <>
-      {pendingChildren && pendingChildren.length ? (
+      {state.pendingChildren && state.pendingChildren.length > 0 ? (
         <div>
-          {pendingChildren.map((child, key) => (
+          {state.pendingChildren.map((child, key) => (
             <div
               key={key}
               className={`pending-child ${key > 0 ? 'opacity-80 pointer-events-none' : ''}`}
@@ -96,7 +79,7 @@ const NftPendingChildren = ({ nftId }: { nftId: number }) => {
           <div className="pending-child" onClick={rejectChildrenWrapper}>
             {loadingReject ? (
               <Spinner />
-            ) : pendingChildren.length > 1 ? (
+            ) : state.pendingChildren.length > 1 ? (
               <span>Reject Children</span>
             ) : (
               <span>Reject Child</span>

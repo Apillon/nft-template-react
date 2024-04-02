@@ -249,6 +249,10 @@ button .address {
   min-width: 120px;
   margin-top: 0.5rem;
 }
+.disabled {
+  opacity: 0.8;
+  pointer-events: none;
+}
 .builders {
   display: inline-block;
   font-weight: 700;

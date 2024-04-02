@@ -8,17 +8,21 @@ import { fetchMyNftIDs, initProvider } from '../lib/utils'
 
 export interface IWeb3State {
   currentChain: number | null
+  children: Child[]
   collectionInfo: CollectionInfo | null
   contracts: Record<string, Contract>
   filterByWallet: boolean
   isAuthenticated: boolean
   isNestable: boolean
+  loadingChildren: boolean
+  loadingMyNfts: boolean
   loadingNft: boolean
   loadingNfts: boolean
-  loadingMyNfts: boolean
+  loadingPendingChildren: boolean
   myNftIDs: Array<number>
   nft: Nft | undefined
   nfts: Array<Nft>
+  pendingChildren: Child[]
   provider: Provider | null
   signer: Signer | null
   walletAddress: string
@@ -26,17 +30,21 @@ export interface IWeb3State {
 
 export const initialWeb3State = {
   currentChain: null,
+  children: [],
   collectionInfo: null,
   contracts: {},
   filterByWallet: false,
   isAuthenticated: false,
   isNestable: false,
+  loadingChildren: false,
+  loadingPendingChildren: false,
   loadingNft: false,
   loadingNfts: false,
   loadingMyNfts: false,
   myNftIDs: [],
   nft: undefined,
   nfts: [],
+  pendingChildren: [],
   provider: null,
   signer: null,
   walletAddress: ''
@@ -132,6 +140,21 @@ const useWeb3Provider = () => {
     return state.nfts
   }
 
+  async function getChildren(parentId: number, tokenAddress?: string) {
+    state.loadingChildren = true
+    setState(state)
+    state.children = await fetchChildren(parentId, tokenAddress)
+
+    state.loadingChildren = false
+    setState(state)
+  }
+
+  async function getPendingChildren(parentId: number, tokenAddress?: string) {
+    state.loadingPendingChildren = true
+    state.pendingChildren = await fetchPendingChildren(parentId, tokenAddress)
+    state.loadingPendingChildren = false
+  }
+
   async function fetchNFTs(balance: BigNumber) {
     const nfts = [] as Array<Nft>
     if (balance.toNumber() === 0) {
@@ -187,6 +210,25 @@ const useWeb3Provider = () => {
     return null
   }
 
+  async function fetchChildren(parentId: number, tokenAddress?: string) {
+    try {
+      const nftContract = getContract(tokenAddress)
+      return await nftContract.connect(await getSigner()).childrenOf(parentId)
+    } catch (e) {
+      console.log(e)
+      return []
+    }
+  }
+  async function fetchPendingChildren(parentId: number, tokenAddress?: string) {
+    try {
+      const nftContract = getContract(tokenAddress)
+      return await nftContract.connect(await getSigner()).pendingChildrenOf(parentId)
+    } catch (e) {
+      console.log(e)
+      return []
+    }
+  }
+
   async function refreshNfts(contract: Contract) {
     const total = await getCollectionTotalSupply(contract)
 
@@ -197,9 +239,9 @@ const useWeb3Provider = () => {
     setState(state)
   }
 
-  function filterNfts(filter: boolean) {
-    state.filterByWallet = filter
-    setState(state)
+  function filterNfts(filterByWallet: boolean) {
+    state.filterByWallet = filterByWallet
+    setState({ ...state, filterByWallet })
   }
 
   function resetNft() {
@@ -227,11 +269,13 @@ const useWeb3Provider = () => {
     disconnect,
     filterNfts,
     initContract,
+    getChildren,
     getCollectionInfo,
     getContract,
     getMyNftIDs,
     getNft,
     getNfts,
+    getPendingChildren,
     getProvider,
     getSigner,
     refreshNfts,

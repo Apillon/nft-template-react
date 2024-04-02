@@ -1,44 +1,23 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+
+import { useWeb3Context } from '../../context/Web3Context'
 import NftNestedChild from './NftNestedChild'
 import NftPendingChildren from './NftPendingChildren'
 import Tag from '../Tag'
-import useWeb3Provider from '../../hooks/useWeb3Provider'
 import NftNesting from './NftNesting'
 import CollectionInfo from '../CollectionInfo'
 import NftTransfer from './NftTransfer'
-import { getContract } from '../../lib/utils'
 
 interface NftProps {
   nft: Nft
 }
 
 const NftNestable = ({ nft }: NftProps) => {
-  const { state, getSigner } = useWeb3Provider()
-
-  const [children, setChildren] = useState([] as Array<Child>)
-  const [hasChildren, setHasChildren] = useState(false)
+  const { state, getChildren } = useWeb3Context()
 
   useEffect(() => {
-    fetchData()
+    getChildren(nft.id)
   }, [nft.id])
-
-  const fetchData = async () => {
-    // Children
-    const fetchedChildren = await childrenOf(nft.id)
-    setChildren(fetchedChildren)
-    setHasChildren(Array.isArray(fetchedChildren) && fetchedChildren.length > 0)
-  }
-
-  /** Nestable NFT */
-  async function childrenOf(parentId: number) {
-    try {
-      const nftContract = getContract()
-      return await nftContract.connect(await getSigner()).childrenOf(parentId)
-    } catch (e) {
-      console.log(e)
-      return []
-    }
-  }
 
   return (
     <div>
@@ -64,18 +43,19 @@ const NftNestable = ({ nft }: NftProps) => {
       </div>
       <div className="nested-tokens">
         <div className="nestable">
-          {hasChildren && (
+          {state.children?.length > 0 && (
             <div>
               <p>
                 <strong>Children</strong>
               </p>
               <div className="grid grid-cols-nft gap-8">
-                {children.map((child) => (
+                {state.children.map((child, key) => (
                   <NftNestedChild
                     key={child.tokenId.toNumber()}
                     parentId={nft.id}
                     tokenId={child.tokenId.toNumber()}
                     contractAddress={child.contractAddress}
+                    disabled={key > 0}
                   />
                 ))}
               </div>

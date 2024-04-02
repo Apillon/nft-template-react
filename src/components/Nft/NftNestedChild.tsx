@@ -1,19 +1,21 @@
 import { BigNumber } from 'ethers'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+
+import { useWeb3Context } from '../../context/Web3Context'
 import { transactionError } from '../../lib/utils/errors'
 import Spinner from '../Spinner'
 import Btn from '../Btn'
-import useWeb3Provider from '../../hooks/useWeb3Provider'
 
 interface NftNestedChildProps {
   parentId: number
   tokenId: number
   contractAddress: string
+  disabled: boolean
 }
 
-const NftNestedChild = ({ parentId, tokenId, contractAddress }: NftNestedChildProps) => {
-  const { state, getContract, getSigner, refreshNfts } = useWeb3Provider()
+const NftNestedChild = ({ parentId, tokenId, contractAddress, disabled }: NftNestedChildProps) => {
+  const { state, getContract, getPendingChildren, getSigner, refreshNfts } = useWeb3Context()
 
   const [metadata, setMetadata] = useState({} as Nft)
   const [loading, setLoading] = useState(true)
@@ -59,6 +61,8 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }: NftNestedChildPr
       toast('Child is being transferred', { type: 'success' })
 
       await tx.wait()
+
+      getPendingChildren(parentId)
       await refreshNfts(nftContract)
     } catch (e) {
       console.log(e)
@@ -86,8 +90,9 @@ const NftNestedChild = ({ parentId, tokenId, contractAddress }: NftNestedChildPr
               <p>{metadata.description}</p>
               <div className="btn-group">
                 <Btn
+                  key={tokenId}
                   loading={loadingTransfer}
-                  disabled={false}
+                  disabled={disabled}
                   onClick={() => transferChildWrapper(contractAddress, tokenId)}
                 >
                   Transfer Token to wallet

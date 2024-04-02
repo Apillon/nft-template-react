@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers'
 import { BaseSyntheticEvent, useState } from 'react'
 import { toast } from 'react-toastify'
 
-import useWeb3Provider from '../hooks/useWeb3Provider'
+import { useWeb3Context } from '../context/Web3Context'
 import { CONTRACT_ADDRESS } from '../lib/config'
 import { transactionError } from '../lib/utils/errors'
 import { checkInputAddress, getContract, isCollectionNestable } from '../lib/utils'
@@ -13,7 +13,7 @@ interface MintNestableProps {
 }
 
 export default function MintNestable({ nftId }: MintNestableProps) {
-  const { state, getSigner, refreshNfts } = useWeb3Provider()
+  const { state, getPendingChildren, getSigner, refreshNfts } = useWeb3Context()
 
   const [loading, setLoading] = useState(false)
   const [address, setAddress] = useState('')
@@ -49,6 +49,8 @@ export default function MintNestable({ nftId }: MintNestableProps) {
         toast('Token minting has started', { type: 'success' })
 
         await tx.wait()
+
+        getPendingChildren(nftId)
         await refreshNfts(nftContract)
       } catch (e) {
         transactionError('Unsuccessful mint', e)
@@ -84,6 +86,8 @@ export default function MintNestable({ nftId }: MintNestableProps) {
         toast('Token minting has started', { type: 'success' })
 
         await tx.wait()
+
+        getPendingChildren(nftId)
         await refreshNfts(childNftContract)
       } catch (e) {
         console.log(e)
