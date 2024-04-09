@@ -3,7 +3,8 @@ module.exports = {
     browser: true,
     es2021: true
   },
-  extends: ['standard', 'plugin:react/recommended'],
+  extends: ['standard', 'eslint:recommended','plugin:react/recommended', 'plugin:prettier/recommended'],
+
   overrides: [
     {
       env: {
@@ -22,6 +23,7 @@ module.exports = {
   plugins: ['react'],
   rules: {
     'react/prop-types': 0,
-    'no-unmodified-loop-condition': 0
+    'no-unmodified-loop-condition': 0,
+    'react/react-in-jsx-scope': 0
   }
 }

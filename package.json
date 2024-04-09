@@ -1,37 +1,41 @@
 {
   "name": "apillon-nft-template-react",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "biome check .",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "eslint-config-standard": "^17.1.0",
+    "@tanstack/react-query": "5.0.5",
     "ethers": "^5.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
-    "react-scripts": "5.0.1",
     "react-toastify": "^9.1.3",
-    "react-tooltip": "^5.21.1",
-    "web-vitals": "^2.1.4"
+    "react-tooltip": "^5.21.1"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "@biomejs/biome": "^1.1.2",
+    "@types/node": "^20.11.17",
+    "@types/react": "^18.2.22",
+    "@types/react-dom": "^18.2.7",
+    "@types/react-modal": "^3.16.3",
+    "@vitejs/plugin-react": "^4.1.0",
+    "@wagmi/cli": "^2.1.0",
+    "autoprefixer": "^10.4.17",
+    "buffer": "^6.0.3",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "postcss": "^8.4.35",
+    "prettier": "^3.2.5",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.9"
   }
 }
