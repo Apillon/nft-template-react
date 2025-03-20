@@ -25,16 +25,22 @@ To configure the template, do the following:
 1. Open the .env file in code editor
 2. Change the first line by entering your smart contract address between parenthesis
 3. Select the chain version by commenting and uncommenting the right chain
+4. If you would like to display your collection's logo & cover also set collection bucket uuid, Apillon API key, secret & URL
 
 Example:
 
 ```sh
-REACT_APP_CONTRACT_ADDRESS = ""; // Paste the address of the NFT collection between the parenthesis
+VITE_CONTRACT_ADDRESS = ""; // Paste the address of the NFT collection between the parenthesis
 
 // uncomment the chain you are using by deleting the slashes
-// REACT_APP_CHAIN_ID = "0x507"; // Moonbase
-// REACT_APP_CHAIN_ID = "0x504"; // Moonbeam
-// REACT_APP_CHAIN_ID = "0x250"; // Astar
+// VITE_CHAIN_ID = "0x507"; // Moonbase
+// VITE_CHAIN_ID = "0x504"; // Moonbeam
+// VITE_CHAIN_ID = "0x250"; // Astar
+
+VITE_APILLON_API_URL = "https://api.apillon.io";
+VITE_COLLECTION_BUCKET_UUID = "00000000-0000-0000-0000-000000000000";
+VITE_APILLON_API_KEY = "00000000-0000-0000-0000-000000000000";
+VITE_APILLON_API_SECRET = "";
 ```
 
 Once you have updated the .env. file, save it. Now the website files are ready to be deployed.

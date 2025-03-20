@@ -15,7 +15,8 @@ import {
   isCollectionNestable,
   metamaskNotSupportedMessage
 } from '../lib/utils'
-import { CHAIN_ID, CONTRACT_ADDRESS } from '../lib/config'
+import { APILLON_API_KEY, APILLON_API_SECRET, APILLON_API_URL, CHAIN_ID, COLLECTION_BUCKET_UUID, CONTRACT_ADDRESS } from '../lib/config'
+import CollectionMetadataInfo from './CollectionMetadataInfo'
 
 export default function Main() {
   const { state, setState, filterNfts, initContract, getCollectionInfo, getMyNftIDs, getNfts } = useWeb3Context()
@@ -97,6 +98,9 @@ export default function Main() {
 
   return (
     <div>
+      {
+        APILLON_API_URL && APILLON_API_KEY && APILLON_API_SECRET && COLLECTION_BUCKET_UUID && <CollectionMetadataInfo/>
+      }
       <div className="box collection br text-center">
         {/* Collection loaded */}
         <CollectionInfo nftId={0} />
