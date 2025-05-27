@@ -1,70 +1,86 @@
-import { BigNumber } from 'ethers'
-import { BaseSyntheticEvent, useState } from 'react'
-import Spinner from './Spinner'
-import { transactionError } from '../lib/utils/errors'
-import { checkInputAmount, getContract } from '../lib/utils'
-import { toast } from 'react-toastify'
-import { useWeb3Context } from '../context/Web3Context'
-import { CONTRACT_ADDRESS } from '../lib/config'
+import { useState } from 'react';
+import { toast } from 'react-toastify';
+import { createPublicClient, http } from 'viem';
+import { useWeb3Context } from '../context/Web3Context';
+import { useContract } from '../hooks/useContract';
+import { useNft } from '../hooks/useNft';
+import { useWalletConnect } from '../hooks/useWalletConnect';
+import Spinner from './Spinner';
+import { transactionError } from '../lib/utils/errors';
+import { checkInputAmount } from '../lib/utils';
 
 export default function Mint() {
-  const { state, refreshNfts } = useWeb3Context()
+  const { collectionInfo } = useWeb3Context();
+  const { mintToken, getBalance, getTotalSupply } = useContract();
+  const { addNftId, addtMyNftIDs, fetchNft } = useNft();
+  const { network } = useWalletConnect();
 
-  const [loading, setLoading] = useState(false)
-  const [amount, setAmount] = useState(1)
+  const [amount, setAmount] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  async function mint() {
-    setLoading(true)
+  const publicClient = createPublicClient({
+    chain: network,
+    transport: http(),
+  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAmount(Number(e.target.value) || 1);
+  };
 
+  const mint = async () => {
     if (!checkInputAmount(amount)) {
-      toast('Enter amount (1-5)', { type: 'warning' })
-      console.log('Wrong amount number')
-      return
-    } else if (!state.signer) {
-      console.debug('Missing signer')
-      return
-    } else if (!state.collectionInfo) {
-      console.debug('Missing collection data')
-      return
+      toast.warning('Wrong amount, please enter number between 1 and 5.');
+      return;
     }
+
+    setLoading(true);
     try {
-      const nftContract = getContract(CONTRACT_ADDRESS)
-      const value = state.collectionInfo.price.mul(BigNumber.from(amount))
+      const tx = await mintToken(BigInt(collectionInfo.price), amount);
+      if (!tx) {
+        toast.error('Mint failed, please try again!');
+        setLoading(false);
+        return;
+      }
 
-      const gasLimit = await nftContract.connect(state.signer).estimateGas.mint(state.walletAddress, amount, { value })
+      toast.info('NFT minting has started');
 
-      const tx = await nftContract
-        .connect(state.signer)
-        .mint(state.walletAddress, amount, { value, gasLimit: gasLimit.mul(11).div(10) })
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+      toast.success('NFT has been successfully minted');
 
-      toast('Token minting has started', { type: 'success' })
+      const logs = receipt?.logs || receipt.data?.logs;
+      if (logs && logs[0]?.topics[3]) {
+        const nftId = Number(logs[0].topics[3]);
 
-      await tx.wait()
-
-      await refreshNfts(nftContract)
+        setTimeout(() => onNftMinted(nftId), 1000);
+      } else {
+        toast.error('Mint failed, please check status of transaction on contract!');
+      }
     } catch (e) {
-      transactionError('Unsuccessful mint', e)
-      console.error(e)
+      console.error(e);
+      transactionError('Unsuccessful mint', e);
+    } finally {
+      setTimeout(() => setLoading(false), 300);
     }
+  };
 
-    setTimeout(() => {
-      setLoading(false)
-    }, 300)
-  }
-
-  const handleChange = (event: BaseSyntheticEvent) => {
-    setAmount(event.target.value)
-  }
+  const onNftMinted = async (nftId: number) => {
+    addtMyNftIDs(nftId);
+    getBalance();
+    getTotalSupply();
+    const metadata = await fetchNft(nftId);
+    if (metadata) {
+      addNftId(nftId, metadata);
+    }
+  };
 
   return (
-    <div className="mint">
-      <div className="amount">
-        <label htmlFor="amount">Number of tokens (1-5):</label>
-        <input type="number" min="1" max="5" value={amount} onChange={() => handleChange} />
+    <div className='mint'>
+      <div className='amount'>
+        <label htmlFor='amount'>Number of tokens (1-5):</label>
+        <input type='number' min='1' max='5' value={amount} onChange={() => handleChange} />
       </div>
-      <button className="btn-mint" id="btnMint" onClick={() => mint()}>
+      <button className='btn-mint' id='btnMint' onClick={() => mint()}>
         {loading ? <Spinner /> : 'Mint'}
       </button>
     </div>
-  )
+  );
 }

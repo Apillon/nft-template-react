@@ -1,85 +1,67 @@
-import { createContext, FC, ReactNode, useContext } from 'react'
-import useWeb3Provider, { IWeb3State } from '../hooks/useWeb3Provider'
+import { createContext, FC, ReactNode, useContext } from 'react';
+import useWeb3Provider from '../hooks/useWeb3Provider';
 
 export interface IWeb3Context {
-  disconnect: () => void
-  filterNfts: (filter: boolean) => void
-  initContract: (contractAddress?: string, provider?: Provider) => Contract
-  getChildren: (parentId: number, tokenAddress?: string) => void
-  getCollectionInfo: (contract: Contract) => Promise<CollectionInfo>
-  getContract: (address?: string) => Contract
-  getMyNftIDs: (contractAddress?: string) => Promise<Array<number>>
-  getNft: (nftId: number) => Nft | undefined
-  getNfts: () => Promise<Nft[]>
-  getPendingChildren: (parentId: number, tokenAddress?: string) => void
-  getProvider: () => Provider
-  getSigner: () => Promise<Signer>
-  refreshNfts: (contract: Contract) => void
-  resetNft: () => void
-  setState: (s: IWeb3State) => void
-  state: IWeb3State
+  collectionInfo: CollectionInfo;
+  filterByAddress: boolean;
+  loadingNfts: boolean;
+  myNftIDs: number[];
+  nfts: Record<number, Nft>;
+  setCollectionInfo: (s: CollectionInfo) => void;
+  setFilterByAddress: (s: boolean) => void;
+  setLoadingNfts: (s: boolean) => void;
+  setMyNftIDs: (s: number[]) => void;
+  setNfts: (s: Record<number, Nft>) => void;
 }
 
-const Web3Context = createContext<IWeb3Context | undefined>(undefined)
+const Web3Context = createContext<IWeb3Context | undefined>(undefined);
 
 type Props = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
-const Web3ContextProvider: FC<Props> = ({ children }: { children: ReactNode }) => {
+const Web3ContextProvider: FC<Props> = ({ children }: Props) => {
   const {
-    disconnect,
-    filterNfts,
-    initContract,
-    getChildren,
-    getCollectionInfo,
-    getContract,
-    getMyNftIDs,
-    getNft,
-    getNfts,
-    getPendingChildren,
-    getProvider,
-    getSigner,
-    refreshNfts,
-    resetNft,
-    setState,
-    state
-  } = useWeb3Provider()
+    collectionInfo,
+    filterByAddress,
+    loadingNfts,
+    myNftIDs,
+    nfts,
+    setCollectionInfo,
+    setFilterByAddress,
+    setLoadingNfts,
+    setMyNftIDs,
+    setNfts,
+  } = useWeb3Provider();
 
   return (
     <Web3Context.Provider
       value={{
-        disconnect,
-        filterNfts,
-        initContract,
-        getChildren,
-        getCollectionInfo,
-        getContract,
-        getMyNftIDs,
-        getNft,
-        getNfts,
-        getPendingChildren,
-        getProvider,
-        getSigner,
-        refreshNfts,
-        resetNft,
-        setState,
-        state
+        collectionInfo,
+        filterByAddress,
+        loadingNfts,
+        myNftIDs,
+        nfts,
+        setCollectionInfo,
+        setFilterByAddress,
+        setLoadingNfts,
+        setMyNftIDs,
+        setNfts,
       }}
     >
       {children}
     </Web3Context.Provider>
-  )
-}
+  );
+};
 
 export const useWeb3Context = () => {
-  const context = useContext(Web3Context)
+  const context = useContext(Web3Context);
 
   if (context === undefined) {
-    throw new Error('useWeb3Context usage must be wrapped with GlobalContext provider.')
+    throw new Error('useWeb3Context usage must be wrapped with GlobalContext provider.');
   }
 
-  return context
-}
+  return context;
+};
 
-export default Web3ContextProvider
+export default Web3ContextProvider;

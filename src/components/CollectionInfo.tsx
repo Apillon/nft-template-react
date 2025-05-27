@@ -1,135 +1,119 @@
-import { constants, ethers } from 'ethers'
-import { useEffect, useState } from 'react'
-import Mint from './Mint'
-import { CHAIN_ID } from '../lib/config'
-import { useWeb3Context } from '../context/Web3Context'
-import MintNestable from './MintNestable'
+import { useEffect, useState } from 'react';
+import { formatEther, maxUint256 } from 'viem';
+import { useWeb3Context } from '../context/Web3Context';
+import { CHAIN_ID, CONTRACT_ADDRESS } from '../lib/config';
+import { contractLink } from '../lib/utils/chain';
+import { useWalletConnect } from '../hooks/useWalletConnect';
+import Mint from './Mint';
 
-interface CollectionInfoProps {
-  nftId: number
-}
+export default function CollectionInfo() {
+  const { collectionInfo } = useWeb3Context();
+  const { walletAddress } = useWalletConnect();
 
-export default function CollectionInfo({ nftId }: CollectionInfoProps) {
-  const { state } = useWeb3Context()
-
-  const [totalSupply, setTotalSupply] = useState(0)
-  const [maxSupply, setMaySupply] = useState(0)
-  const [dropStartTimestamp, setDropStartTimestamp] = useState(0)
-  const [dropStartDate, setDropStartDate] = useState(new Date())
-  const [days, setDays] = useState(0)
-  const [hours, setHours] = useState(0)
-  const [minutes, setMinutes] = useState(0)
-  const [seconds, setSeconds] = useState(0)
+  const [totalSupply, setTotalSupply] = useState(0);
+  const [maxSupply, setMaySupply] = useState(0);
+  const [dropStartTimestamp, setDropStartTimestamp] = useState(0);
+  const [dropStartDate, setDropStartDate] = useState(new Date());
+  const [days, setDays] = useState(0);
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    if (state.collectionInfo?.address) {
-      loadInfo()
+    if (walletAddress) {
+      loadInfo();
     }
-  }, [state.collectionInfo])
+  }, [walletAddress]);
 
   const loadInfo = () => {
-    const dropStart = (state.collectionInfo?.dropStart.toNumber() || 0) * 1000
+    const dropStart = (Number(collectionInfo?.dropStart) || 0) * 1000;
 
-    setTotalSupply(state.collectionInfo?.totalSupply.toNumber() || 0)
-    setMaySupply(state.collectionInfo?.maxSupply.toNumber() || 0)
-    setDropStartTimestamp(dropStart)
-    setDropStartDate(new Date(dropStart))
+    setTotalSupply(Number(collectionInfo?.totalSupply) || 0);
+    setMaySupply(Number(collectionInfo?.maxSupply) || 0);
+    setDropStartTimestamp(dropStart);
+    setDropStartDate(new Date(dropStart));
 
-    if (state.collectionInfo?.drop) {
+    if (collectionInfo?.drop) {
       if (dropStart > Date.now()) {
         // The data/time we want to countdown to
-        countdown(dropStart)
+        countdown(dropStart);
 
         // Run myFunc every second
         const myFunc = setInterval(() => {
-          countdown(dropStart)
+          countdown(dropStart);
           // Display the message when countdown is over
-          const timeLeft = dropStart - new Date().getTime()
+          const timeLeft = dropStart - new Date().getTime();
           if (timeLeft < 0) {
-            clearInterval(myFunc)
+            clearInterval(myFunc);
           }
-        }, 1000)
+        }, 1000);
       }
     }
-  }
+  };
 
   const countdown = (date: number) => {
-    const now = new Date().getTime()
-    const timeLeft = date - now
+    const now = new Date().getTime();
+    const timeLeft = date - now;
 
     // Calculating the days, hours, minutes and seconds left
-    setDays(Math.floor(timeLeft / (1000 * 60 * 60 * 24)))
-    setHours(Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)))
-    setMinutes(Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)))
-    setSeconds(Math.floor((timeLeft % (1000 * 60)) / 1000))
-  }
-
-  function collectionLink() {
-    switch (CHAIN_ID) {
-      case '0x504':
-        return `https://moonbeam.moonscan.io/address/${state.collectionInfo?.address}`
-      case '0x507':
-        return `https://moonbase.moonscan.io/address/${state.collectionInfo?.address}`
-      case '0x250':
-        return `https://astar.subscan.io/address/${state.collectionInfo?.address}`
-      default:
-        console.warn('Missing chainId')
-        return 'https://moonbeam.moonscan.io'
-    }
-  }
+    setDays(Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
+    setHours(Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+    setMinutes(Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)));
+    setSeconds(Math.floor((timeLeft % (1000 * 60)) / 1000));
+  };
 
   return (
     <>
-      {state.collectionInfo?.address && (
-        <div className="collection-info" id="collection">
+      {walletAddress && (
+        <div className='bg-white'>
           <div>
             <b> Collection address: </b>
-            <a href={collectionLink()} target="_blank" rel="noreferrer">
-              {state.collectionInfo.address}
-              <img src="images/icon-open.svg" width={10} height={10} />
+            <a href={contractLink(CONTRACT_ADDRESS, CHAIN_ID)} target='_blank' rel='noreferrer'>
+              {CONTRACT_ADDRESS}
+              <img src='images/icon-open.svg' width={10} height={10} />
             </a>
           </div>
           <div>
             <b> Name: </b>
-            {state.collectionInfo.name}
+            {collectionInfo.name}
           </div>
           <div>
             <b> Symbol: </b>
-            {state.collectionInfo.symbol}
+            {collectionInfo.symbol}
           </div>
           <div>
             <b> Revocable: </b>
-            {state.collectionInfo.revokable ? 'TRUE' : 'FALSE'}
+            {collectionInfo.revokable ? 'TRUE' : 'FALSE'}
           </div>
           <div>
             <b> Soulbound: </b>
-            {state.collectionInfo.soulbound ? 'TRUE' : 'FALSE'}
+            {collectionInfo.soulbound ? 'TRUE' : 'FALSE'}
           </div>
           <div>
             <b> Supply: </b>
             {(() => {
-              if (maxSupply && maxSupply.toString() === constants.MaxUint256.toString()) {
-                return <span>{totalSupply.toString()} / &infin;</span>
+              if (maxSupply && BigInt(maxSupply) >= BigInt(maxUint256)) {
+                return <span>{totalSupply.toString()} / &infin;</span>;
               } else {
                 return (
                   <span>
                     {Number(totalSupply)} / {Number(maxSupply)}
                   </span>
-                )
+                );
               }
             })()}
           </div>
           {/* Is drop */}
-          {state.collectionInfo.drop && (
+          {collectionInfo.drop && (
             <div>
               <div>
                 <b> Price: </b>
-                {ethers.utils.formatEther(state.collectionInfo.price)}
+                {formatEther(collectionInfo.price)}
               </div>
-              <div className="drop" id="drop">
+              <div className='drop' id='drop'>
                 {(() => {
                   if (totalSupply && maxSupply && totalSupply.toString() === maxSupply.toString()) {
-                    return <h3>Sold out!</h3>
+                    return <h3>Sold out!</h3>;
                   } else if (dropStartTimestamp > Date.now()) {
                     return (
                       <div>
@@ -139,11 +123,9 @@ export default function CollectionInfo({ nftId }: CollectionInfoProps) {
                         {minutes} <b>m </b>
                         {seconds} <b>s </b>
                       </div>
-                    )
-                  } else if (nftId > 0) {
-                    return <MintNestable nftId={nftId} />
+                    );
                   } else {
-                    return <Mint />
+                    return <Mint />;
                   }
                 })()}
               </div>
@@ -152,5 +134,5 @@ export default function CollectionInfo({ nftId }: CollectionInfoProps) {
         </div>
       )}
     </>
-  )
+  );
 }
