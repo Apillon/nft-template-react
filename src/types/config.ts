@@ -6,7 +6,10 @@ export enum AppEnv {
 
 declare global {
   interface ConfigInterface  {
-    CHAIN_ID: String;
-    CONTRACT_ADDRESS: String;
+    CHAIN_ID: string;
+    CONTRACT_ADDRESS: string;
+    IMG_LOGO: string;
+    IMG_COVER: string;
+    EMBEDDED_WALLET_CLIENT: string;
   }
 }

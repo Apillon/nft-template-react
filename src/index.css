@@ -2,362 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .clip-path-tag {
-    clip-path: polygon(0 0, 100% 0%, 85% 100%, 0% 100%);
-  }
-  .clip-path-child {
-    clip-path: polygon(0 0, 100% 0%, 100% 100%, 15% 100%);
-  }
+* {
+  @apply box-border;
 }
 
-* {
-  box-sizing: border-box;
+html {
+  @apply overflow-x-hidden;
 }
 body {
-  background: #f0f2da;
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 1.66666;
-  color: #141721;
-  margin: 0;
+  @apply bg-bg font-sans text-xs font-normal leading-relaxed text-bgDarker min-h-screen m-0;
 }
 body.lock {
-  overflow: hidden;
-}
-.relative {
-  position: relative;
+  @apply overflow-hidden;
 }
 .container {
-  max-width: 1440px;
-  width: 100%;
-  padding: 32px 44px;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-.header {
-  background: #141721;
-  padding: 0px 32px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-}
-.header-r {
-  display: inline-flex;
+  @apply w-full max-w-[100vw];
 }
 
-.box {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: #ffffff;
-  overflow: hidden;
-}
-.box-content {
-  padding: 16px 24px 24px;
-}
-.box img {
-  height: 100%;
-  object-fit: contain;
-}
-.box.collection {
-  position: relative;
-  padding: 30px;
-}
-.collection {
-  padding: 16px;
-  gap: 16px;
-}
-.drop {
-  width: fit-content;
-  max-width: 500px;
-  margin: 1rem auto 0;
-}
-.field {
-  margin-bottom: 8px;
-}
-.field label {
-  display: inline-block;
-  width: 35%;
-  white-space: nowrap;
-}
-.field label [tooltip] {
-  display: inline-block;
-  vertical-align: middle;
-  margin: 0 4px;
-}
-.field input {
-  display: inline-block;
-  width: 64%;
-}
-.br {
-  border-radius: 12px;
-}
-.opacity-0 {
-  opacity: 0;
-}
-.text-center {
-  text-align: center;
-}
-.actions {
-  display: flex;
-  gap: 0.5rem 2rem;
-  max-width: 500px;
-  margin: 0 auto 2rem;
-}
-.actions button {
-  width: calc(50% - 1rem);
-}
-.mintNestable {
-  margin-top: 1rem;
-  text-align: left;
-}
-.mintNestable input {
-  width: 100%;
-}
-input[type='radio'] {
-  @apply top-2 right-2 z-1;
-
-  &:checked + label .nft {
-    box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.35);
-  }
-  + label {
-    @apply cursor-pointer;
-  }
-}
-.nestable .actions {
-  gap: 0.5rem 1rem;
-  margin-bottom: 0;
-}
-.nestable .actions button {
-  width: calc(50% - 0.5rem);
-}
-.nestable .error {
-  margin: -1rem auto 2rem;
-  text-align: center;
-}
-.nested-tokens {
-  min-width: 65vw;
-}
-.nestable-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  grid-gap: 2rem;
-  align-items: end;
-  margin: 0 auto 2rem;
-}
-.pending-child {
-  @apply relative h-6 py-[2px] pr-2 pl-4 mb-1 cursor-pointer font-bold bg-blue clip-path-child;
-}
-.children {
-  display: flex;
-  overflow-x: auto;
-  gap: 1rem;
-}
-.children .box {
-  min-width: 140px;
-}
-.children .box-content {
-  padding: 0;
-}
-.flex-wrap {
-  flex-wrap: wrap;
-}
 h1 {
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 28px;
-  color: #f0f2da;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  @apply my-2 text-xl font-bold;
 }
 h3 {
-  font-weight: 700;
-  font-size: 14px;
-  line-height: 24px;
-  margin-top: 0px;
-  margin-bottom: 4px;
+  @apply mb-0 mt-0 text-sm font-bold;
 }
 p {
-  margin-top: 0px;
-  margin-bottom: 20px;
+  @apply mb-5 mt-0;
 }
 label {
-  font-weight: bold;
+  @apply font-bold;
 }
 input {
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-a {
+  @apply rounded border border-grey p-[6px];
 }
 img {
-  max-width: 100%;
+  @apply max-w-full;
 }
 button {
-  position: relative;
-  width: 100%;
-  height: 40px;
-  padding: 9px 20px;
-  background: #78dce8;
-  border-radius: 6px;
+  @apply relative h-10 cursor-pointer rounded-md border-none bg-blue px-5 py-[9px] text-sm font-bold shadow-none;
   animation-name: bounceOut;
   animation-duration: 50s;
-  box-shadow: none;
-  border: none;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
 }
 button:hover {
   animation-name: bounceIn;
   animation-duration: 50s;
 }
-button svg {
-  position: absolute;
-  left: 6px;
-  top: 50%;
-  transform: translate(0, -50%);
-}
 button .address {
-  padding-left: 12px;
-}
-.btn-connect-wrapper {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-.btn-connect-wrapper button {
-  width: fit-content;
-  min-width: 134px;
-}
-.btn-connect-wrapper .error {
-  color: red;
-  font-size: 12px;
-}
-.btn-mint {
-  display: inline-block;
-  width: fit-content;
-  min-width: 120px;
-  margin-top: 0.5rem;
-}
-.disabled {
-  opacity: 0.8;
-  pointer-events: none;
-}
-.builders {
-  display: inline-block;
-  font-weight: 700;
-  font-size: 14px;
-  line-height: 24px;
-  color: #f9ff73;
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 0.3s;
-}
-.builders:hover {
-  color: #141721;
-  background-color: #f9ff73;
+  @apply pl-3;
 }
 
-.nft {
-  @apply flex flex-col bg-white overflow-hidden rounded-xl;
-}
 .nuxt-icon.icon-auto svg {
-  width: auto;
-  height: auto;
+  @apply h-auto w-auto;
 }
 
-.modal {
-  position: fixed;
-  transition: all 0.3s ease;
-  top: 50%;
-  left: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-}
-.ReactModal__Overlay {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.5) !important;
-  width: 100%;
-  height: 100%;
-}
-.modal-container {
-  @apply w-screen h-screen overflow-auto  p-8;
-}
-.modal-close {
-  position: absolute;
-  right: 15px;
-  top: 15px;
-  outline: none;
-  appearance: none;
-  color: red;
-  background: none;
-  border: 0px;
-  font-weight: bold;
+input[type='radio'] + label {
   cursor: pointer;
 }
-.modal.open {
-  visibility: visible;
-  opacity: 1;
-  transition-delay: 0s;
+input[type='radio']:checked + label .nft {
+  box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.35);
 }
+
 .btn-modal-exit {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2rem;
-  height: 2rem;
-  padding: 0.25rem;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2rem;
-  font-weight: normal;
-  cursor: pointer;
-  background: transparent;
-  animation: none !important;
-  z-index: 2;
+  @apply absolute right-0 top-0 z-2 inline-flex h-8 w-8 !animate-none cursor-pointer items-center justify-center bg-transparent p-1 text-2xl font-normal;
 }
 .btn-modal-exit:after {
   content: '\00d7'; /* This will render the 'X' */
 }
-.parent-token {
-  width: 80%;
-  max-width: 30rem;
-  margin: 0 auto;
+
+.Toastify__close-button {
+  @apply w-10;
 }
-.parent-token .box.br {
-  border-radius: 0;
+.Toastify__close-button svg {
+  @apply left-1/2 -translate-x-1/2 -translate-y-1/2;
 }
 
-@media (min-width: 767px) {
-  .container {
-    padding: 32px 88px;
-  }
-  .header-l {
-    max-width: 404px;
-    margin-right: 20px;
-  }
+#oaw-wallet-widget-btn {
+  @apply invisible absolute -z-1;
 }
-@media (max-width: 768px) {
-  .header {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .box.collection {
-    padding-top: 60px;
+.oaw-btn-default-style {
+  @apply h-12 w-full border border-grey-transparent bg-transparent text-[0px] dark:border-bg;
+
+  &::after {
+    content: '▶◀ Apillon Embedded Wallet';
+    @apply text-sm;
   }
 }
 
@@ -417,12 +143,4 @@ button .address {
   100% {
     stroke-dashoffset: -124;
   }
-}
-
-.Toastify__close-button {
-  width: 40px;
-}
-.Toastify__close-button svg {
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
