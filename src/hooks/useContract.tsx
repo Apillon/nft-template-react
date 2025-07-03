@@ -59,26 +59,37 @@ export function useContract() {
     return Number(collectionInfo.balance);
   };
 
-  const mintToken = async (price: bigint, amount = 1): Promise<Address | void> => {
+  const mintToken = async (price: bigint, amount = 1): Promise<Address | null> => {
+    if(!walletAddress) return null;
+
     const value = price * BigInt(amount);
     const args = [walletAddress, amount];
-    const gas = await publicClient.estimateContractGas({
+
+    if (info.activeWallet?.address) {
+      return await mintEW(args, value);
+    }
+
+    await initContract(true);
+    const gasLimit = await calcGas(args, value);
+    return await contract.write.mint(args, { value }, { gasLimit });
+  };
+
+  async function calcGas(args: Array<any>, value: bigint): Promise<bigint>{
+    try {
+      const gas = await publicClient.estimateContractGas({
       address: CONTRACT_ADDRESS,
       abi: nftAbi,
       functionName: 'mint',
       args,
-      account: walletAddress,
+      account: walletAddress as Address,
       value,
     });
-    const gasLimit = (gas * 110n) / 100n;
-
-    if (info.activeWallet?.address) {
-      return await mintEW(args, value, gasLimit);
+      return (gas * 110n) / 100n;
+    } catch (e: any) {
+      console.error(e);
+      return 250000n;
     }
-
-    await initContract(true);
-    return await contract.write.mint(args, { value }, { gasLimit });
-  };
+  }
 
   const loadCollectionInfo = async () => {
     await initContract();

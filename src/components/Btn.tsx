@@ -24,7 +24,7 @@ const Btn = ({
   }
 
   return (
-    <button {...attrs} className={disabled ? 'relative disabled' : 'relative'} onClick={(e) => handleClick(e)}>
+    <button {...attrs} className={disabled ? 'relative btn disabled' : 'relative btn'} onClick={(e) => handleClick(e)}>
       {loading && <Spinner />}
       <span className={loading ? 'opacity-0' : ''}>{children}</span>
     </button>

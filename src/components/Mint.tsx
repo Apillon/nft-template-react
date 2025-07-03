@@ -43,7 +43,7 @@ export default function Mint() {
 
       toast.info('NFT minting has started');
 
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+      const receipt: any = await publicClient.waitForTransactionReceipt({ hash: tx });
       toast.success('NFT has been successfully minted');
 
       const logs = receipt?.logs || receipt.data?.logs;
@@ -78,7 +78,7 @@ export default function Mint() {
         <label htmlFor='amount'>Number of tokens (1-5):</label>
         <input type='number' min='1' max='5' value={amount} onChange={() => handleChange} />
       </div>
-      <button className='btn-mint' id='btnMint' onClick={() => mint()}>
+      <button className='btn btn-mint' onClick={() => mint()}>
         {loading ? <Spinner /> : 'Mint'}
       </button>
     </div>
