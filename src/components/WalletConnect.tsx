@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAccount, useConnect, useChains } from 'wagmi';
-import { EmbeddedWallet } from '@apillon/wallet-react';
-import { useWallet } from '@apillon/wallet-react';
+import { type Network } from '@apillon/wallet-sdk';
+import { EmbeddedWallet, useWallet } from '@apillon/wallet-react';
 import { useWalletConnect } from '../hooks/useWalletConnect';
 import { EMBEDDED_WALLET_CLIENT } from '../lib/config';
 import { shortHash } from '../lib/strings';
@@ -22,9 +22,9 @@ export default function WalletConnect() {
   const networks = chains.map((chain) => ({
     name: chain.name,
     id: chain.id,
-    rpcUrl: chain.rpcUrls.default.http[0],
-    explorerUrl: chain.blockExplorers?.default?.url,
-  }));
+    rpcUrl: chain.rpcUrls.default.http[0]||'',
+    explorerUrl: chain.blockExplorers?.default?.url||'',
+  } as Network));
 
   function openModal() {
     scrollLock.enable();
@@ -53,6 +53,14 @@ export default function WalletConnect() {
     setConnectorName(conn.name);
     connect({ connector: conn });
   };
+  
+  const  disconnect =() => {
+    if (isConnected) {
+      disconnectWallet();
+    } else if (wallet) {
+      wallet.events.emit('open', true);
+    }
+  }
 
   useEffect(() => {
     if (isConnected) closeWallet();
@@ -68,7 +76,7 @@ export default function WalletConnect() {
             variant='secondary'
             disabled={false}
             loading={false}
-            onClick={() => disconnectWallet()}
+            onClick={() => disconnect()}
           >
             Disconnect
           </Btn>

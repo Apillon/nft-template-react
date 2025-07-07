@@ -1,5 +1,4 @@
 import { useAccount, useWallet, useContract } from '@apillon/wallet-react';
-import { encodeFunctionData } from 'viem';
 import { moonbaseAlpha } from 'viem/chains';
 import { useWalletConnect } from './useWalletConnect';
 import {  CONTRACT_ADDRESS } from '../lib/config'
@@ -21,22 +20,38 @@ export function useEmbeddedWallet() {
     return await read('balanceOf', [info.activeWallet?.address]);
   };
 
-  const mintEW = async (args: any[], value: bigint, gasLimit: bigint) => {
+  const mintEW = async (args: any[], value: bigint) => {
+    const label = 'Mint';
     const chainId = Number(network?.id || moonbaseAlpha.id);
 
-    const signedTx = await wallet?.signPlainTransaction({
+    const signedTx = await wallet.evm.signContractWrite({
+      contractAbi: nftAbi,
+      contractAddress: CONTRACT_ADDRESS,
+      contractFunctionName: 'mint',
+      contractFunctionValues: args,
+      contractTransactionValue: value,
+      chainId,
+      label,
       mustConfirm: true,
-      tx: {
-        to: CONTRACT_ADDRESS,
-        data: encodeFunctionData({ abi: nftAbi, functionName: 'mint', args }),
-        gasLimit,
-        value,
-        chainId,
-      },
     });
+    // PLAING TRANSACTION
+    // const signedTx = await wallet?.evm.signPlainTransaction({
+    //   mustConfirm: true,
+    //   tx: {
+    //     to: CONTRACT_ADDRESS,
+    //     data: encodeFunctionData({ abi: nftAbi, functionName: 'mint', args }),
+    //     gasLimit,
+    //     value,
+    //     chainId,
+    //   },
+    // });
 
-    if (signedTx?.signedTxData) {
-      const tx = await wallet?.broadcastTransaction(signedTx.signedTxData, chainId);
+    if(signedTx){
+      const tx = await wallet.evm.broadcastTransaction(
+        signedTx.signedTxData,
+        signedTx.chainId,
+        label
+      )      
       return tx?.txHash;
     }
     return null;

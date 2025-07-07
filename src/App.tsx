@@ -67,21 +67,6 @@ function App() {
       </div>
 
       {connected && collectionInfo?.name && (
-        <div className='max-w-lg mx-auto my-12'>
-          <h3>
-            The collection you are viewing supports nesting NFTs you own. To setup the nested relationship between NFTs,
-            you first have to own them.
-          </h3>
-          <strong>Instructions:</strong>
-          <ol>
-            <li>Mint one or multiple NFTs</li>
-            <li>Once minted, click on “My NFTs”</li>
-            <li>The NFTs you own will be displayed</li>
-          </ol>
-        </div>
-      )}
-
-      {connected && collectionInfo?.name && (
         <div className='mb-6'>
           <h2 className='text-center'>Show NFTs:</h2>
           <div className='flex justify-center items-center gap-2'>
