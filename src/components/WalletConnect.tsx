@@ -97,18 +97,15 @@ export default function WalletConnect() {
       )}
 
       <Modal
-        className='fixed bg-bg max-w-xl w-full mx-auto top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
+        className='fixed bg-bg max-w-xl w-full mx-auto rounded-lg top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
         ariaHideApp={false}
         isOpen={modalWalletVisible}
         onRequestClose={() => closeModal()}
       >
-        <h4 className='text-lg font-semibold text-center text-gray-900 dark:text-white mb-4'>Connect Wallet</h4>
+        <button className="btn-modal-exit" onClick={() => closeModal()}></button>
         <div className='mx-auto my-12 w-full max-w-md text-center px-4 md:px-6'>
-          <h2 className='my-4 text-2xl font-semibold'>Your NFTs, delivered with style</h2>
-          <p className='text-muted-foreground'>
-            Email them. Airdrop them. Share a link. <br />
-            No gas fees. No fuss.
-          </p>
+          <h2 className="my-4">Your NFTs, delivered with style</h2>
+          <p>Email them. Airdrop them. Share a link. <br />No gas fees. No fuss.</p>
 
           <hr className='my-6 border-gray-300 dark:border-zinc-700' />
           <h4 className='my-4 text-lg font-medium'>Connect your wallet to get started:</h4>

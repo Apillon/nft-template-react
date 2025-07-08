@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { type Events } from '@apillon/wallet-sdk';
+import type { Events } from '@apillon/wallet-sdk';
 import { useWallet } from '@apillon/wallet-react';
 import { useWeb3Context } from './context/Web3Context';
 import { useContract } from './hooks/useContract';

@@ -9,6 +9,7 @@ import {
   baseSepolia,
   celo,
   celoAlfajores,
+  Chain,
   mainnet,
   moonbaseAlpha,
   moonbeam,
@@ -20,7 +21,7 @@ import {
 } from 'wagmi/chains';
 import { metaMask, coinbaseWallet, walletConnect } from 'wagmi/connectors';
 
-const chains = [
+const chains: readonly [Chain, ...Chain[]] = [
   arbitrum,
   arbitrumSepolia,
   astar,
@@ -47,16 +48,16 @@ const transports = chains.reduce(
   },
   {} as Record<number, ReturnType<typeof http>>
 );
+const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLET_CONNECT_PROJECT;
 
-const connectors = [
+const connectors = WALLET_CONNECT_PROJECT_ID ? [
   metaMask({ dappMetadata: { name: 'Apillon NFT Template' } }),
   coinbaseWallet({ appName: 'Apillon NFT Template' }),
+  walletConnect({projectId:WALLET_CONNECT_PROJECT_ID})
+]: [
+  metaMask({ dappMetadata: { name: 'Apillon NFT Template' } }),
+  coinbaseWallet({ appName: 'Apillon NFT Template' })
 ];
-
-const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLET_CONNECT_PROJECT;
-if (WALLET_CONNECT_PROJECT_ID) {
-  connectors.push(walletConnect({ projectId: WALLET_CONNECT_PROJECT_ID }));
-}
 
 export const config = createConfig({
   chains,

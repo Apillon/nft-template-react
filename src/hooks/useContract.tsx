@@ -42,8 +42,8 @@ export function useContract() {
       if (!(field in collectionInfo) || collectionInfo[field]) return;
 
       await initContract();
-      collectionInfo[field] = await call();
-      setCollectionInfo(collectionInfo);
+      const value = await call();
+      setCollectionInfo({ ...collectionInfo, [field]: value });
     },
     [collectionInfo, initContract]
   );

@@ -115,6 +115,7 @@ export function useNft() {
           await refetch();
         }
 
+        // @ts-ignore
         await walletClient?.request({
           method: 'wallet_watchAsset',
           params: {
@@ -125,7 +126,7 @@ export function useNft() {
               image,
             },
           },
-        });
+        } as any);
       }
     } catch (e) {
       console.error('Error importing NFT:', e);
