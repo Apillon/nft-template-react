@@ -35,7 +35,7 @@ export function useWalletConnect() {
     if (isConnected) {
       disconnect();
     } else if (wallet && info.activeWallet?.address) {
-      wallet.events.emit('disconnect');
+      (wallet.events.emit as (event: string, ...args: any[]) => void)("disconnect");
     }
   };
 

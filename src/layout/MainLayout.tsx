@@ -7,7 +7,7 @@ export default function MainLayout({ children }: { children: any }) {
     <div className="container">
       <Header />
       {children}
-      <ToastContainer type="error" position="bottom-right" />
+      <ToastContainer position="bottom-right"/>
     </div>
   )
 }
